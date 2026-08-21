@@ -1,0 +1,2 @@
+rs_over_capacity_rejected=True
+gcm_tampered_tag_rejected=True

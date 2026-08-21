@@ -1,0 +1,10 @@
+platform,trial,cover_name,payload_size_bytes,success,ber,failure_reason,timestamp
+telegram,1,preview.jpg,5,False,,StructuralFailure: missing TELEGRAM_BOT_TOKEN or TELEGRAM_CHAT_ID,2026-08-21T05:48:25.145878+00:00
+telegram,2,preview.jpg,5,False,,StructuralFailure: missing TELEGRAM_BOT_TOKEN or TELEGRAM_CHAT_ID,2026-08-21T05:48:25.630218+00:00
+telegram,3,preview.jpg,5,False,,StructuralFailure: missing TELEGRAM_BOT_TOKEN or TELEGRAM_CHAT_ID,2026-08-21T05:48:26.098936+00:00
+discord,1,preview.jpg,5,False,,StructuralFailure: missing DISCORD_WEBHOOK_URL,2026-08-21T05:48:26.567675+00:00
+discord,2,preview.jpg,5,False,,StructuralFailure: missing DISCORD_WEBHOOK_URL,2026-08-21T05:48:27.052001+00:00
+discord,3,preview.jpg,5,False,,StructuralFailure: missing DISCORD_WEBHOOK_URL,2026-08-21T05:48:27.505111+00:00
+imgur,1,preview.jpg,5,False,,StructuralFailure: missing IMGUR_CLIENT_ID,2026-08-21T05:48:27.958187+00:00
+imgur,2,preview.jpg,5,False,,StructuralFailure: missing IMGUR_CLIENT_ID,2026-08-21T05:48:28.411281+00:00
+imgur,3,preview.jpg,5,False,,StructuralFailure: missing IMGUR_CLIENT_ID,2026-08-21T05:48:28.879995+00:00
