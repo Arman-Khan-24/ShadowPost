@@ -10,6 +10,7 @@ import jpeglib
 import numpy as np
 from cryptography.hazmat.primitives.ciphers.aead import AESGCM
 from fastapi import FastAPI, File, Form, HTTPException, UploadFile
+from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import Response
 from reedsolo import RSCodec, ReedSolomonError
 
@@ -18,6 +19,14 @@ from phase2_rs_roundtrip import bits_to_bytes, bytes_to_bits
 from phase3_aes_gcm_roundtrip import NONCE_BYTES, TAG_BYTES, RS_PARITY_BYTES, derive_aes256_key
 
 app = FastAPI(title="ShadowPost")
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["null"],  # Allows opening frontend.html directly from disk.
+    allow_origin_regex=r"https?://(localhost|127\.0\.0\.1)(:\d+)?",
+    allow_credentials=False,
+    allow_methods=["POST"],
+    allow_headers=["*"],
+)
 PAIR_INDICES = (0, 2)
 CODEWORD_BITS = 48 * 8
 LENGTH_PREFIX_BYTES = 2
