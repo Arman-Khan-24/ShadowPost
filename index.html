@@ -1,0 +1,220 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>ShadowPost</title>
+<style>
+  :root {
+    --bg: #0b1020; --card: #141a2e; --line: #2a3352;
+    --text: #e8ecf8; --muted: #93a0c4;
+    --accent: #4f7cff; --accent-dark: #3d63d6;
+    --err-bg: #3a1220; --err-line: #a13050; --err-text: #ffb3c8;
+    --ok-bg: #0e2e22; --ok-line: #1f7a55; --ok-text: #9be8c5;
+  }
+  * { box-sizing: border-box; }
+  body {
+    margin: 0; min-height: 100vh; background: var(--bg); color: var(--text);
+    font: 15px/1.55 system-ui, "Segoe UI", sans-serif;
+    display: flex; justify-content: center; padding: 40px 16px;
+  }
+  .wrap { width: 100%; max-width: 620px; }
+  h1 { margin: 0 0 4px; font-size: 26px; letter-spacing: -0.02em; }
+  .sub { color: var(--muted); margin: 0 0 22px; font-size: 14px; }
+
+  .tabs { display: flex; gap: 6px; background: var(--card); border: 1px solid var(--line);
+          border-radius: 12px 12px 0 0; padding: 6px; }
+  .tab { flex: 1; border: 0; border-radius: 8px; background: transparent; color: var(--muted);
+         font: inherit; font-weight: 600; padding: 10px; cursor: pointer; }
+  .tab:hover { color: var(--text); }
+  .tab.active { background: var(--accent); color: #fff; }
+
+  .panel { background: var(--card); border: 1px solid var(--line); border-top: 0;
+           border-radius: 0 0 12px 12px; padding: 22px; display: none; }
+  .panel.active { display: block; }
+
+  label { display: block; font-size: 13px; font-weight: 600; color: var(--muted); margin: 14px 0 6px; }
+  label:first-child { margin-top: 0; }
+  input[type="text"], input[type="password"], textarea, input[type="file"] {
+    width: 100%; background: #0d1326; color: var(--text); border: 1px solid var(--line);
+    border-radius: 8px; padding: 10px 12px; font: inherit; outline: none;
+  }
+  input:focus, textarea:focus { border-color: var(--accent); }
+  textarea { min-height: 84px; resize: vertical; }
+  input[type="file"] { padding: 8px; cursor: pointer; }
+  input[type="file"]::file-selector-button {
+    background: var(--accent); color: #fff; border: 0; border-radius: 6px;
+    padding: 6px 12px; margin-right: 10px; cursor: pointer; font: inherit;
+  }
+
+  .go { width: 100%; margin-top: 18px; background: var(--accent); color: #fff; border: 0;
+        border-radius: 8px; padding: 12px; font: inherit; font-weight: 700; cursor: pointer; }
+  .go:hover { background: var(--accent-dark); }
+  .go:disabled { opacity: 0.5; cursor: wait; }
+
+  .msg { margin-top: 16px; padding: 12px 14px; border-radius: 8px; font-size: 14px;
+         white-space: pre-wrap; word-break: break-word; display: none; }
+  .msg.error { display: block; background: var(--err-bg); border: 1px solid var(--err-line); color: var(--err-text); }
+  .msg.ok    { display: block; background: var(--ok-bg);  border: 1px solid var(--ok-line);  color: var(--ok-text); }
+
+  .result { margin-top: 16px; display: none; }
+  .result.show { display: block; }
+  .dl { display: inline-block; background: var(--ok-line); color: #fff; text-decoration: none;
+        border-radius: 8px; padding: 10px 16px; font-weight: 700; }
+  .decoded { background: #0d1326; border: 1px solid var(--line); border-radius: 8px;
+             padding: 12px 14px; white-space: pre-wrap; word-break: break-word; }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <h1>ShadowPost</h1>
+  <p class="sub">DCT steganography &middot; talks to <code>localhost:8000</code></p>
+
+  <div class="tabs">
+    <button class="tab active" data-panel="encode">Encode</button>
+    <button class="tab" data-panel="decode">Decode</button>
+  </div>
+
+  <!-- ============ ENCODE ============ -->
+  <section class="panel active" id="encode">
+    <form id="encode-form">
+      <label for="enc-file">Cover JPEG</label>
+      <input type="file" id="enc-file" accept="image/jpeg,.jpg,.jpeg" required>
+
+      <label for="enc-msg">Secret message</label>
+      <textarea id="enc-msg" required placeholder="Text to hide inside the image"></textarea>
+
+      <label for="enc-pass">Passphrase</label>
+      <input type="password" id="enc-pass" required placeholder="Used to derive the AES key">
+
+      <button class="go" type="submit">Encode</button>
+    </form>
+    <div class="msg" id="enc-status"></div>
+    <div class="result" id="enc-result">
+      <p style="margin:0 0 10px; color:var(--ok-text)">Stego JPEG ready.</p>
+      <a class="dl" id="enc-dl" download="shadowpost-stego.jpg">Download stego JPEG</a>
+    </div>
+  </section>
+
+  <!-- ============ DECODE ============ -->
+  <section class="panel" id="decode">
+    <form id="decode-form">
+      <label for="dec-file">Stego JPEG</label>
+      <input type="file" id="dec-file" accept="image/jpeg,.jpg,.jpeg" required>
+
+      <label for="dec-pass">Passphrase</label>
+      <input type="password" id="dec-pass" required placeholder="Same passphrase used to encode">
+
+      <button class="go" type="submit">Decode</button>
+    </form>
+    <div class="msg" id="dec-status"></div>
+    <div class="result" id="dec-result">
+      <p style="margin:0 0 6px; color:var(--ok-text)">Recovered message:</p>
+      <div class="decoded" id="dec-message"></div>
+    </div>
+  </section>
+</div>
+
+<script>
+(function () {
+  const API = window.SHADOWPOST_API || 'https://shadowpost.onrender.com';
+
+  // ---- tabs ----
+  document.querySelectorAll('.tab').forEach(function (btn) {
+    btn.addEventListener('click', function () {
+      document.querySelectorAll('.tab').forEach(b => b.classList.remove('active'));
+      document.querySelectorAll('.panel').forEach(p => p.classList.remove('active'));
+      btn.classList.add('active');
+      document.getElementById(btn.dataset.panel).classList.add('active');
+    });
+  });
+
+  function status(id, kind, text) {
+    const el = document.getElementById(id);
+    el.className = 'msg' + (kind ? ' ' + kind : '');
+    el.textContent = text || '';
+  }
+  function busy(btn, on, label) {
+    btn.disabled = on;
+    btn.textContent = on ? 'Working…' : label;
+  }
+  async function apiError(res) {
+    try {
+      const data = await res.json();
+      return typeof data.detail === 'string'
+        ? data.detail
+        : JSON.stringify(data.detail);
+    } catch (_) {
+      return 'Request failed with HTTP ' + res.status;
+    }
+  }
+
+  // ---- encode ----
+  const encForm = document.getElementById('encode-form');
+  encForm.addEventListener('submit', async function (e) {
+    e.preventDefault();
+    const btn = encForm.querySelector('.go');
+    status('enc-status', null, '');
+    document.getElementById('enc-result').classList.remove('show');
+    busy(btn, true, 'Encode');
+    try {
+      const fd = new FormData();
+      fd.append('cover', document.getElementById('enc-file').files[0]);
+      fd.append('message', document.getElementById('enc-msg').value);
+      fd.append('passphrase', document.getElementById('enc-pass').value);
+
+      const res = await fetch(API + '/encode', { method: 'POST', body: fd });
+      if (!res.ok) throw new Error(await apiError(res));
+
+      const blob = await res.blob();
+      const url = URL.createObjectURL(blob);
+      const link = document.getElementById('enc-dl');
+      if (link.href) URL.revokeObjectURL(link.href);
+      link.href = url;
+
+      const maxBytes = res.headers.get('X-ShadowPost-Max-Bytes');
+      document.getElementById('enc-result').classList.add('show');
+      status('enc-status', 'ok', maxBytes
+        ? 'Done. This image can hold up to ' + maxBytes + ' bytes of message.'
+        : 'Done.');
+      link.click(); // auto-download as well as showing the link
+    } catch (err) {
+      status('enc-status', 'error', err instanceof TypeError
+        ? 'Cannot reach ' + API + ' — is the FastAPI server running?'
+        : err.message);
+    } finally {
+      busy(btn, false, 'Encode');
+    }
+  });
+
+  // ---- decode ----
+  const decForm = document.getElementById('decode-form');
+  decForm.addEventListener('submit', async function (e) {
+    e.preventDefault();
+    const btn = decForm.querySelector('.go');
+    status('dec-status', null, '');
+    document.getElementById('dec-result').classList.remove('show');
+    busy(btn, true, 'Decode');
+    try {
+      const fd = new FormData();
+      fd.append('stego', document.getElementById('dec-file').files[0]);
+      fd.append('passphrase', document.getElementById('dec-pass').value);
+
+      const res = await fetch(API + '/decode', { method: 'POST', body: fd });
+      if (!res.ok) throw new Error(await apiError(res));
+
+      const data = await res.json();
+      document.getElementById('dec-message').textContent = data.message;
+      document.getElementById('dec-result').classList.add('show');
+    } catch (err) {
+      status('dec-status', 'error', err instanceof TypeError
+        ? 'Cannot reach ' + API + ' — is the FastAPI server running?'
+        : err.message);
+    } finally {
+      busy(btn, false, 'Decode');
+    }
+  });
+})();
+</script>
+</body>
+</html>
