@@ -1,0 +1,9 @@
+__pycache__/
+*.py[cod]
+phase1_results/
+phase1_results_positions_0_2/
+phase1_results_positions_0_2_tie_fixed/
+phase2_rs_results/
+phase3_aes_gcm_results/
+phase5_results/
+.env
