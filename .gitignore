@@ -1,0 +1,4 @@
+__pycache__/
+*.pyc
+.env
+phase5_results/platform_trials.csv
