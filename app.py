@@ -21,7 +21,7 @@ from phase3_aes_gcm_roundtrip import NONCE_BYTES, TAG_BYTES, RS_PARITY_BYTES, de
 app = FastAPI(title="ShadowPost")
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["null"],  # Allows opening frontend.html directly from disk.
+    allow_origins=["null", "http://localhost:8000", "http://localhost:3000", "https://shadow-post-gules.vercel.app"],
     allow_origin_regex=r"https?://(localhost|127\.0\.0\.1)(:\d+)?",
     allow_credentials=False,
     allow_methods=["POST"],
