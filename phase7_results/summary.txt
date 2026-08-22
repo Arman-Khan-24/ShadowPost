@@ -1,0 +1,13 @@
+ShadowPost Phase 7 summary
+Trials: 90
+Recovered exactly: 81 (90.0%)
+Failed: 9 (10.0%)
+
+Success rate per platform:
+- telegram: 36/45 (80.0%)
+- discord: 45/45 (100.0%)
+
+Success rate by payload class:
+- small (10 B): telegram 93.3%, discord 100.0%
+- medium (100 B): telegram 93.3%, discord 100.0%
+- large (near max): telegram 53.3%, discord 100.0%
