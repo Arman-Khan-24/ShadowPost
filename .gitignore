@@ -1,4 +1,2 @@
-__pycache__/
-*.pyc
-.env
-phase5_results/platform_trials.csv
+# Contains live platform credentials; must remain local.
+run_trials.bat
