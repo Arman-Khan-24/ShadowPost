@@ -1,10 +1,91 @@
 platform,trial,cover_name,payload_size_bytes,success,ber,failure_reason,timestamp
-telegram,1,preview.jpg,5,False,,StructuralFailure: missing TELEGRAM_BOT_TOKEN or TELEGRAM_CHAT_ID,2026-08-21T05:48:25.145878+00:00
-telegram,2,preview.jpg,5,False,,StructuralFailure: missing TELEGRAM_BOT_TOKEN or TELEGRAM_CHAT_ID,2026-08-21T05:48:25.630218+00:00
-telegram,3,preview.jpg,5,False,,StructuralFailure: missing TELEGRAM_BOT_TOKEN or TELEGRAM_CHAT_ID,2026-08-21T05:48:26.098936+00:00
-discord,1,preview.jpg,5,False,,StructuralFailure: missing DISCORD_WEBHOOK_URL,2026-08-21T05:48:26.567675+00:00
-discord,2,preview.jpg,5,False,,StructuralFailure: missing DISCORD_WEBHOOK_URL,2026-08-21T05:48:27.052001+00:00
-discord,3,preview.jpg,5,False,,StructuralFailure: missing DISCORD_WEBHOOK_URL,2026-08-21T05:48:27.505111+00:00
-imgur,1,preview.jpg,5,False,,StructuralFailure: missing IMGUR_CLIENT_ID,2026-08-21T05:48:27.958187+00:00
-imgur,2,preview.jpg,5,False,,StructuralFailure: missing IMGUR_CLIENT_ID,2026-08-21T05:48:28.411281+00:00
-imgur,3,preview.jpg,5,False,,StructuralFailure: missing IMGUR_CLIENT_ID,2026-08-21T05:48:28.879995+00:00
+telegram,1,arsenal/preview.jpg,10,True,0.00000000,,2026-08-22T23:22:35.345147+00:00
+telegram,2,arsenal/preview.jpg,100,True,0.00000000,,2026-08-22T23:23:08.042833+00:00
+telegram,3,arsenal/preview.jpg,1889,False,,"ValueError: cover capacity is only 20000 bits, needs 23040",2026-08-22T23:23:18.642902+00:00
+telegram,4,audiophile/preview.jpg,10,True,0.00000000,,2026-08-22T23:23:29.501371+00:00
+telegram,5,audiophile/preview.jpg,100,True,0.00000000,,2026-08-22T23:24:17.586939+00:00
+telegram,6,audiophile/preview.jpg,641,True,0.00000000,,2026-08-22T23:24:44.682920+00:00
+telegram,7,beach/preview.jpg,10,True,0.00781250,,2026-08-22T23:24:50.595570+00:00
+telegram,8,beach/preview.jpg,100,True,0.00364583,,2026-08-22T23:24:58.740591+00:00
+telegram,9,beach/preview.jpg,2593,False,,"ValueError: cover capacity is only 20000 bits, needs 31488",2026-08-22T23:25:27.498515+00:00
+telegram,10,corsair_collection/dotted.fabeb454b273c6d2398a.jpg,10,False,0.52994792,"StructuralFailure: local /decode failed: HTTP 400: {""detail"":""decode failed: ReedSolomonError: Too many (or few) errors found by Chien Search for the errata locator polynomial!""}",2026-08-22T23:25:35.383190+00:00
+telegram,11,corsair_collection/dotted.fabeb454b273c6d2398a.jpg,100,False,0.49791667,"StructuralFailure: local /decode failed: HTTP 400: {""detail"":""decode failed: ReedSolomonError: Too many (or few) errors found by Chien Search for the errata locator polynomial!""}",2026-08-22T23:25:47.942895+00:00
+telegram,12,corsair_collection/dotted.fabeb454b273c6d2398a.jpg,21569,False,,"ValueError: cover capacity is only 115200 bits, needs 259200",2026-08-22T23:26:21.477780+00:00
+telegram,13,deep_space/preview.jpg,10,True,0.00000000,,2026-08-22T23:27:05.496672+00:00
+telegram,14,deep_space/preview.jpg,100,True,0.00000000,,2026-08-22T23:27:33.858281+00:00
+telegram,15,deep_space/preview.jpg,2977,False,,"ValueError: cover capacity is only 20000 bits, needs 36096",2026-08-22T23:27:41.436858+00:00
+telegram,16,demon_core/preview.jpg,10,True,0.00130208,,2026-08-22T23:27:49.380471+00:00
+telegram,17,demon_core/preview.jpg,100,True,0.00104167,,2026-08-22T23:28:16.912986+00:00
+telegram,18,demon_core/preview.jpg,2273,False,,"ValueError: cover capacity is only 20000 bits, needs 27648",2026-08-22T23:29:06.589038+00:00
+telegram,19,dna_fragment/preview.jpg,10,True,0.00000000,,2026-08-22T23:29:13.769458+00:00
+telegram,20,dna_fragment/preview.jpg,100,True,0.00000000,,2026-08-22T23:29:52.940817+00:00
+telegram,21,dna_fragment/preview.jpg,2977,True,0.00011082,,2026-08-22T23:30:25.398137+00:00
+telegram,22,eagleflag/preview.jpg,10,True,0.00000000,,2026-08-22T23:30:58.079157+00:00
+telegram,23,eagleflag/preview.jpg,100,True,0.00000000,,2026-08-22T23:31:28.170685+00:00
+telegram,24,eagleflag/preview.jpg,2977,True,0.00000000,,2026-08-22T23:31:57.915695+00:00
+telegram,25,fantasticcar/preview.jpg,10,True,0.00000000,,2026-08-22T23:32:07.074721+00:00
+telegram,26,fantasticcar/preview.jpg,100,True,0.00000000,,2026-08-22T23:32:15.757775+00:00
+telegram,27,fantasticcar/preview.jpg,2593,True,0.00012703,,2026-08-22T23:32:48.534224+00:00
+telegram,28,neon_sunset/preview.jpg,10,True,0.00000000,,2026-08-22T23:33:10.079665+00:00
+telegram,29,neon_sunset/preview.jpg,100,True,0.00000000,,2026-08-22T23:33:20.245320+00:00
+telegram,30,neon_sunset/preview.jpg,3425,True,0.00014468,,2026-08-22T23:33:35.005357+00:00
+telegram,31,retro/preview.jpg,10,True,0.00000000,,2026-08-22T23:33:47.271214+00:00
+telegram,32,retro/preview.jpg,100,True,0.00000000,,2026-08-22T23:33:55.344901+00:00
+telegram,33,retro/preview.jpg,2241,False,,"ValueError: cover capacity is only 20000 bits, needs 27264",2026-08-22T23:34:03.742759+00:00
+telegram,34,ricepod/preview.jpg,10,True,0.00000000,,2026-08-22T23:34:12.523239+00:00
+telegram,35,ricepod/preview.jpg,100,True,0.00000000,,2026-08-22T23:34:18.784098+00:00
+telegram,36,ricepod/preview.jpg,641,True,0.00000000,,2026-08-22T23:34:25.059299+00:00
+telegram,37,sheep/preview.jpg,10,True,0.00000000,,2026-08-22T23:34:52.411861+00:00
+telegram,38,sheep/preview.jpg,100,True,0.00000000,,2026-08-22T23:34:59.689886+00:00
+telegram,39,sheep/preview.jpg,641,True,0.00000000,,2026-08-22T23:35:28.644336+00:00
+telegram,40,shimmering_particles/preview.jpg,10,True,0.00000000,,2026-08-22T23:35:57.410334+00:00
+telegram,41,shimmering_particles/preview.jpg,100,True,0.00000000,,2026-08-22T23:36:05.010635+00:00
+telegram,42,shimmering_particles/preview.jpg,2529,False,,"ValueError: cover capacity is only 20000 bits, needs 30720",2026-08-22T23:36:33.727593+00:00
+telegram,43,techno/preview.jpg,10,True,0.00000000,,2026-08-22T23:36:45.298680+00:00
+telegram,44,techno/preview.jpg,100,True,0.00000000,,2026-08-22T23:37:13.998774+00:00
+telegram,45,techno/preview.jpg,641,True,0.00049603,,2026-08-22T23:37:42.318608+00:00
+discord,1,arsenal/preview.jpg,10,True,0.00000000,,2026-08-22T23:37:51.337732+00:00
+discord,2,arsenal/preview.jpg,100,True,0.00000000,,2026-08-22T23:37:59.813262+00:00
+discord,3,arsenal/preview.jpg,1889,True,0.00000000,,2026-08-22T23:38:06.583998+00:00
+discord,4,audiophile/preview.jpg,10,True,0.00000000,,2026-08-22T23:38:28.830137+00:00
+discord,5,audiophile/preview.jpg,100,True,0.00000000,,2026-08-22T23:38:32.626756+00:00
+discord,6,audiophile/preview.jpg,641,True,0.00000000,,2026-08-22T23:38:36.828404+00:00
+discord,7,beach/preview.jpg,10,True,0.00000000,,2026-08-22T23:38:40.964519+00:00
+discord,8,beach/preview.jpg,100,True,0.00000000,,2026-08-22T23:38:46.083329+00:00
+discord,9,beach/preview.jpg,2593,True,0.00000000,,2026-08-22T23:38:50.926764+00:00
+discord,10,corsair_collection/dotted.fabeb454b273c6d2398a.jpg,10,True,0.00000000,,2026-08-22T23:38:56.535744+00:00
+discord,11,corsair_collection/dotted.fabeb454b273c6d2398a.jpg,100,True,0.00000000,,2026-08-22T23:39:03.457131+00:00
+discord,12,corsair_collection/dotted.fabeb454b273c6d2398a.jpg,21569,True,0.00000000,,2026-08-22T23:39:09.704102+00:00
+discord,13,deep_space/preview.jpg,10,True,0.00000000,,2026-08-22T23:39:23.404337+00:00
+discord,14,deep_space/preview.jpg,100,True,0.00000000,,2026-08-22T23:39:28.715639+00:00
+discord,15,deep_space/preview.jpg,2977,True,0.00000000,,2026-08-22T23:39:33.861243+00:00
+discord,16,demon_core/preview.jpg,10,True,0.00000000,,2026-08-22T23:39:39.873935+00:00
+discord,17,demon_core/preview.jpg,100,True,0.00000000,,2026-08-22T23:39:44.696634+00:00
+discord,18,demon_core/preview.jpg,2273,True,0.00000000,,2026-08-22T23:39:49.571299+00:00
+discord,19,dna_fragment/preview.jpg,10,True,0.00000000,,2026-08-22T23:39:54.757910+00:00
+discord,20,dna_fragment/preview.jpg,100,True,0.00000000,,2026-08-22T23:40:02.050572+00:00
+discord,21,dna_fragment/preview.jpg,2977,True,0.00000000,,2026-08-22T23:40:09.303135+00:00
+discord,22,eagleflag/preview.jpg,10,True,0.00000000,,2026-08-22T23:40:17.413229+00:00
+discord,23,eagleflag/preview.jpg,100,True,0.00000000,,2026-08-22T23:40:22.662894+00:00
+discord,24,eagleflag/preview.jpg,2977,True,0.00000000,,2026-08-22T23:40:37.631974+00:00
+discord,25,fantasticcar/preview.jpg,10,True,0.00000000,,2026-08-22T23:40:43.939606+00:00
+discord,26,fantasticcar/preview.jpg,100,True,0.00000000,,2026-08-22T23:40:50.379098+00:00
+discord,27,fantasticcar/preview.jpg,2593,True,0.00000000,,2026-08-22T23:40:57.293560+00:00
+discord,28,neon_sunset/preview.jpg,10,True,0.00000000,,2026-08-22T23:41:04.355575+00:00
+discord,29,neon_sunset/preview.jpg,100,True,0.00000000,,2026-08-22T23:41:10.636679+00:00
+discord,30,neon_sunset/preview.jpg,3425,True,0.00000000,,2026-08-22T23:41:17.854937+00:00
+discord,31,retro/preview.jpg,10,True,0.00000000,,2026-08-22T23:41:24.573224+00:00
+discord,32,retro/preview.jpg,100,True,0.00000000,,2026-08-22T23:41:30.729068+00:00
+discord,33,retro/preview.jpg,2241,True,0.00000000,,2026-08-22T23:41:36.354132+00:00
+discord,34,ricepod/preview.jpg,10,True,0.00000000,,2026-08-22T23:41:43.053427+00:00
+discord,35,ricepod/preview.jpg,100,True,0.00000000,,2026-08-22T23:41:47.233685+00:00
+discord,36,ricepod/preview.jpg,641,True,0.00000000,,2026-08-22T23:41:51.436517+00:00
+discord,37,sheep/preview.jpg,10,True,0.00000000,,2026-08-22T23:41:55.941572+00:00
+discord,38,sheep/preview.jpg,100,True,0.00000000,,2026-08-22T23:42:00.019415+00:00
+discord,39,sheep/preview.jpg,641,True,0.00000000,,2026-08-22T23:42:07.679838+00:00
+discord,40,shimmering_particles/preview.jpg,10,True,0.00000000,,2026-08-22T23:42:12.054579+00:00
+discord,41,shimmering_particles/preview.jpg,100,True,0.00000000,,2026-08-22T23:42:17.718751+00:00
+discord,42,shimmering_particles/preview.jpg,2529,True,0.00000000,,2026-08-22T23:42:23.083113+00:00
+discord,43,techno/preview.jpg,10,True,0.00000000,,2026-08-22T23:42:30.663999+00:00
+discord,44,techno/preview.jpg,100,True,0.00000000,,2026-08-22T23:42:34.798768+00:00
+discord,45,techno/preview.jpg,641,True,0.00000000,,2026-08-22T23:42:39.361714+00:00

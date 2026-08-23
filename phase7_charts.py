@@ -1,155 +1,144 @@
-"""Phase 7 reporting charts for the ShadowPost platform bench.
-
-Reads phase5_results/platform_trials.csv (produced by phase5_bench.py and
-manual_platform_test.py) and renders three summary charts into phase7_results/:
-
-1. success_rate_per_platform.png  - bar chart, % of fully recovered trials
-2. average_ber_per_platform.png   - bar chart, mean bit-error rate of delivered images
-3. max_capacity_per_cover.png     - bar chart + table, largest embedded payload per cover
-
-Run after platform trials are complete; safe to re-run at any time.
-"""
+"""Phase 7 charts for the completed ShadowPost platform trial matrix."""
 from __future__ import annotations
 
-import csv
-from collections import defaultdict
 from pathlib import Path
 
 import matplotlib
 
-matplotlib.use("Agg")  # Headless rendering; no display required.
+matplotlib.use("Agg")
 import matplotlib.pyplot as plt
+import pandas as pd
 
 ROOT = Path(__file__).resolve().parent
 TRIAL_CSV = ROOT / "phase5_results" / "platform_trials.csv"
 OUT_DIR = ROOT / "phase7_results"
+PLATFORM_ORDER = ("telegram", "discord")
+PAYLOAD_ORDER = ("small (10 B)", "medium (100 B)", "large (near max)")
+COLORS = {"telegram": "#4f7cff", "discord": "#5865f2"}
 
 
-def load_rows(path: Path) -> list[dict[str, str]]:
-    if not path.is_file():
-        raise SystemExit(f"missing trial log {path}; run phase5_bench.py or manual_platform_test.py first")
-    with path.open(newline="", encoding="utf-8") as handle:
-        rows = [row for row in csv.DictReader(handle) if any((value or "").strip() for value in row.values())]
-    if not rows:
-        raise SystemExit(f"{path} contains no trial rows")
-    return rows
+def load_trials() -> pd.DataFrame:
+    if not TRIAL_CSV.is_file():
+        raise SystemExit(f"missing trial log: {TRIAL_CSV}")
+    frame = pd.read_csv(TRIAL_CSV)
+    required = {"platform", "cover_name", "payload_size_bytes", "success"}
+    if missing := required - set(frame.columns):
+        raise SystemExit(f"trial log missing required columns: {', '.join(sorted(missing))}")
+    frame["success"] = frame["success"].astype(str).str.lower().eq("true")
+    frame["payload_size_bytes"] = pd.to_numeric(frame["payload_size_bytes"], errors="coerce")
+    frame["payload_class"] = pd.Series("large (near max)", index=frame.index)
+    frame.loc[frame["payload_size_bytes"].eq(10), "payload_class"] = "small (10 B)"
+    frame.loc[frame["payload_size_bytes"].eq(100), "payload_class"] = "medium (100 B)"
+    return frame
 
 
-def ordered_platforms(rows: list[dict[str, str]]) -> list[str]:
-    seen: list[str] = []
-    for row in rows:
-        if row["platform"] not in seen:
-            seen.append(row["platform"])
-    return sorted(seen)
+def annotate_bars(axis: plt.Axes, bars) -> None:
+    for bar in bars:
+        value = bar.get_height()
+        axis.text(bar.get_x() + bar.get_width() / 2, value + 1.5, f"{value:.0f}%",
+                  ha="center", va="bottom", fontsize=9, fontweight="bold")
 
 
-def success_rates(rows: list[dict[str, str]]) -> dict[str, tuple[float, int]]:
-    results: dict[str, list[bool]] = defaultdict(list)
-    for row in rows:
-        results[row["platform"]].append(row["success"].strip().lower() == "true")
-    return {name: (100.0 * sum(wins) / len(wins), len(wins)) for name, wins in results.items()}
-
-
-def average_bers(rows: list[dict[str, str]]) -> dict[str, float | None]:
-    values: dict[str, list[float]] = defaultdict(list)
-    for row in rows:
-        try:
-            values[row["platform"]].append(float(row["ber"]))
-        except ValueError:  # Empty ber column means structural failure, not measurable damage.
-            continue
-    averages: dict[str, float | None] = {}
-    for name in ordered_platforms(rows):
-        scores = values.get(name)
-        averages[name] = sum(scores) / len(scores) if scores else None
-    return averages
-
-
-def max_payload_by_cover(rows: list[dict[str, str]]) -> dict[str, tuple[int, int]]:
-    best: dict[str, int] = {}
-    trials: dict[str, int] = defaultdict(int)
-    for row in rows:
-        cover = row["cover_name"] or "(unknown)"
-        trials[cover] += 1
-        try:
-            size = int(row["payload_size_bytes"])
-        except ValueError:
-            continue
-        best[cover] = max(best.get(cover, 0), size)
-    return {cover: (best.get(cover, 0), count) for cover, count in sorted(trials.items())}
-
-
-def chart_success_rate(rates: dict[str, tuple[float, int]], destination: Path) -> None:
-    names = list(rates)
-    values = [rates[name][0] for name in names]
-    labels = [f"{rates[name][0]:.0f}%\n(n={rates[name][1]})" for name in names]
-    figure, axis = plt.subplots(figsize=(8, 5))
-    bars = axis.bar(names, values, color="#4f7cff", edgecolor="white")
-    for bar, label in zip(bars, labels):
-        axis.text(bar.get_x() + bar.get_width() / 2, bar.get_height() + 1.5, label,
-                  ha="center", va="bottom", fontsize=10)
+def chart_platform_success(frame: pd.DataFrame) -> pd.DataFrame:
+    summary = frame.groupby("platform", sort=False)["success"].agg(["mean", "count"]).reindex(PLATFORM_ORDER)
+    values = summary["mean"].mul(100)
+    figure, axis = plt.subplots(figsize=(7, 5))
+    bars = axis.bar(values.index.str.title(), values, color=[COLORS[name] for name in values.index], edgecolor="white")
+    annotate_bars(axis, bars)
     axis.set_ylim(0, 112)
     axis.set_ylabel("Full-message recovery (%)")
-    axis.set_title("ShadowPost: success rate per platform")
-    axis.grid(axis="y", alpha=0.3)
+    axis.set_title("ShadowPost success rate per platform")
+    axis.grid(axis="y", alpha=.25)
+    for label, bar in zip(summary["count"], bars):
+        axis.text(bar.get_x() + bar.get_width() / 2, 4, f"n={label}", ha="center", color="white", fontweight="bold")
     figure.tight_layout()
-    figure.savefig(destination, dpi=150)
+    figure.savefig(OUT_DIR / "success_rate_per_platform.png", dpi=150)
     plt.close(figure)
+    return summary
 
 
-def chart_average_ber(ber_averages: dict[str, float | None], destination: Path) -> None:
-    names = list(ber_averages)
-    measured = [name for name in names if ber_averages[name] is not None]
-    values = [ber_averages[name] for name in measured]
-    figure, axis = plt.subplots(figsize=(8, 5))
-    bars = axis.bar(measured, values, color="#c2455f", edgecolor="white")
-    for bar, name in zip(bars, measured):
-        axis.text(bar.get_x() + bar.get_width() / 2, bar.get_height(), f"{ber_averages[name]:.6f}",
-                  ha="center", va="bottom", fontsize=10)
-    missing = [name for name in names if ber_averages[name] is None]
-    if missing:
-        axis.text(0.99, 0.97, "no BER data: " + ", ".join(missing),
-                  transform=axis.transAxes, ha="right", va="top", fontsize=9, color="#666666")
-    axis.set_ylabel("Mean bit-error rate of delivered image")
-    axis.set_title("ShadowPost: average BER per platform")
-    axis.grid(axis="y", alpha=0.3)
+def chart_payload_success(frame: pd.DataFrame) -> pd.DataFrame:
+    grouped = (frame.groupby(["payload_class", "platform"])["success"].mean().mul(100).unstack("platform")
+               .reindex(index=PAYLOAD_ORDER, columns=PLATFORM_ORDER))
+    figure, axis = plt.subplots(figsize=(9, 5.5))
+    grouped.plot(kind="bar", ax=axis, color=[COLORS[name] for name in grouped.columns], edgecolor="white", width=.72)
+    for container in axis.containers:
+        annotate_bars(axis, container)
+    axis.set_ylim(0, 112)
+    axis.set_xlabel("Payload size")
+    axis.set_ylabel("Full-message recovery (%)")
+    axis.set_title("ShadowPost success rate by payload size")
+    axis.legend(title="Platform", labels=[name.title() for name in grouped.columns])
+    axis.grid(axis="y", alpha=.25)
     figure.tight_layout()
-    figure.savefig(destination, dpi=150)
+    figure.savefig(OUT_DIR / "success_rate_by_payload_size.png", dpi=150)
     plt.close(figure)
+    return grouped
 
 
-def chart_max_capacity(capacities: dict[str, tuple[int, int]], destination: Path) -> None:
-    names = list(capacities)
-    values = [capacities[name][0] for name in names]
-    figure, axis = plt.subplots(figsize=(8, 5))
-    axis.barh(names, values, color="#1f7a55", edgecolor="white")
-    for index, name in enumerate(names):
-        axis.text(values[index], index, f" {values[index]} B", va="center", fontsize=10)
-    axis.set_xlabel("Largest payload embedded in trials (bytes)")
-    axis.set_title("ShadowPost: max embedded payload per cover")
-    axis.invert_yaxis()
-    table = axis.table(cellText=[[name, str(capacities[name][1]), f"{capacities[name][0]} B"] for name in names],
-                       colLabels=["cover image", "trials", "max payload"], loc="bottom", cellLoc="center")
-    table.auto_set_font_size(False)
-    table.set_fontsize(9)
-    table.scale(1, 1.4)
-    axis.set_xticks([])
-    figure.subplots_adjust(left=0.22, bottom=0.32)
-    figure.savefig(destination, dpi=150, bbox_inches="tight")
+def chart_cover_success(frame: pd.DataFrame) -> pd.DataFrame:
+    grouped = frame.groupby("cover_name", sort=False)["success"].agg(["mean", "count"])
+    values = grouped["mean"].mul(100).sort_values(ascending=True)
+    figure, axis = plt.subplots(figsize=(10, 7))
+    bars = axis.barh(values.index, values, color="#059669", edgecolor="white")
+    for bar in bars:
+        axis.text(min(bar.get_width() + 1, 101), bar.get_y() + bar.get_height() / 2, f"{bar.get_width():.0f}%",
+                  va="center", fontsize=8)
+    axis.set_xlim(0, 112)
+    axis.set_xlabel("Full-message recovery (%) across Telegram and Discord")
+    axis.set_title("ShadowPost success rate per cover image")
+    axis.grid(axis="x", alpha=.25)
+    figure.tight_layout()
+    figure.savefig(OUT_DIR / "success_rate_per_cover.png", dpi=150)
     plt.close(figure)
+    return grouped
+
+
+def chart_overall_summary(frame: pd.DataFrame) -> tuple[int, int]:
+    successes = int(frame["success"].sum())
+    failures = int(len(frame) - successes)
+    figure, axis = plt.subplots(figsize=(7, 5.5))
+    axis.pie([successes, failures], labels=[f"Recovered\n{successes}", f"Failed\n{failures}"],
+             colors=["#059669", "#dc2626"], autopct="%.1f%%", startangle=90,
+             textprops={"fontsize": 11}, wedgeprops={"edgecolor": "white", "linewidth": 2})
+    axis.set_title("ShadowPost overall 90-trial outcome")
+    figure.tight_layout()
+    figure.savefig(OUT_DIR / "overall_trial_summary.png", dpi=150)
+    plt.close(figure)
+    return successes, failures
+
+
+def write_summary(frame: pd.DataFrame, platform_summary: pd.DataFrame, payload_summary: pd.DataFrame,
+                  successes: int, failures: int) -> None:
+    lines = [
+        "ShadowPost Phase 7 summary",
+        f"Trials: {len(frame)}",
+        f"Recovered exactly: {successes} ({100 * successes / len(frame):.1f}%)",
+        f"Failed: {failures} ({100 * failures / len(frame):.1f}%)",
+        "",
+        "Success rate per platform:",
+    ]
+    for platform, row in platform_summary.iterrows():
+        lines.append(f"- {platform}: {int(row['mean'] * row['count'])}/{int(row['count'])} ({row['mean'] * 100:.1f}%)")
+    lines.append("")
+    lines.append("Success rate by payload class:")
+    for payload, row in payload_summary.iterrows():
+        rates = ", ".join(f"{platform} {rate:.1f}%" for platform, rate in row.items())
+        lines.append(f"- {payload}: {rates}")
+    (OUT_DIR / "summary.txt").write_text("\n".join(lines) + "\n", encoding="utf-8")
 
 
 def main() -> None:
     OUT_DIR.mkdir(exist_ok=True)
-    rows = load_rows(TRIAL_CSV)
-    outputs = {
-        "success_rate_per_platform.png": lambda path: chart_success_rate(success_rates(rows), path),
-        "average_ber_per_platform.png": lambda path: chart_average_ber(average_bers(rows), path),
-        "max_capacity_per_cover.png": lambda path: chart_max_capacity(max_payload_by_cover(rows), path),
-    }
-    for filename, render in outputs.items():
-        destination = OUT_DIR / filename
-        render(destination)
-        print(f"wrote {destination}")
+    trials = load_trials()
+    platform_summary = chart_platform_success(trials)
+    payload_summary = chart_payload_success(trials)
+    chart_cover_success(trials)
+    successes, failures = chart_overall_summary(trials)
+    write_summary(trials, platform_summary, payload_summary, successes, failures)
+    for path in sorted(OUT_DIR.glob("*.png")):
+        print(f"wrote {path}")
+    print(f"wrote {OUT_DIR / 'summary.txt'}")
 
 
 if __name__ == "__main__":
