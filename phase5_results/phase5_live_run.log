@@ -1,0 +1,32 @@
+telegram trial 1 | preview.jpg | 10 bytes | success=True | BER=0.00000000 
+telegram trial 2 | preview.jpg | 100 bytes | success=True | BER=0.00000000 
+telegram trial 3 | preview.jpg | 1889 bytes | success=False | BER= ValueError: cover capacity is only 20000 bits, needs 23040
+telegram trial 4 | preview.jpg | 10 bytes | success=True | BER=0.00000000 
+telegram trial 5 | preview.jpg | 100 bytes | success=True | BER=0.00000000 
+telegram trial 6 | preview.jpg | 641 bytes | success=True | BER=0.00000000 
+telegram trial 7 | preview.jpg | 10 bytes | success=True | BER=0.00390625 
+telegram trial 8 | preview.jpg | 100 bytes | success=True | BER=0.00416667 
+telegram trial 9 | preview.jpg | 2593 bytes | success=False | BER= ValueError: cover capacity is only 20000 bits, needs 31488
+telegram trial 10 | dotted.fabeb454b273c6d2398a.jpg | 10 bytes | success=False | BER=0.48828125 StructuralFailure: local /decode failed: HTTP 400: {"detail":"decode failed: ReedSolomonError: Too many (or few) errors found by Chien Search for the errata locator polynomial!"}
+telegram trial 11 | dotted.fabeb454b273c6d2398a.jpg | 100 bytes | success=False | BER=0.49635417 StructuralFailure: local /decode failed: HTTP 400: {"detail":"decode failed: ReedSolomonError: Too many (or few) errors found by Chien Search for the errata locator polynomial!"}
+telegram trial 12 | dotted.fabeb454b273c6d2398a.jpg | 21569 bytes | success=False | BER= ValueError: cover capacity is only 115200 bits, needs 259200
+telegram trial 13 | preview.jpg | 10 bytes | success=True | BER=0.00000000 
+telegram trial 14 | preview.jpg | 100 bytes | success=True | BER=0.00000000 
+telegram trial 15 | preview.jpg | 2977 bytes | success=False | BER= ValueError: cover capacity is only 20000 bits, needs 36096
+telegram trial 16 | preview.jpg | 10 bytes | success=True | BER=0.00130208 
+telegram trial 17 | preview.jpg | 100 bytes | success=True | BER=0.00052083 
+telegram trial 18 | preview.jpg | 2273 bytes | success=False | BER= ValueError: cover capacity is only 20000 bits, needs 27648
+telegram trial 19 | preview.jpg | 10 bytes | success=True | BER=0.00000000 
+telegram trial 20 | preview.jpg | 100 bytes | success=True | BER=0.00000000 
+telegram trial 21 | preview.jpg | 2977 bytes | success=True | BER=0.00002770 
+telegram trial 22 | preview.jpg | 10 bytes | success=True | BER=0.00000000 
+telegram trial 23 | preview.jpg | 100 bytes | success=True | BER=0.00000000 
+telegram trial 24 | preview.jpg | 2977 bytes | success=True | BER=0.00000000 
+telegram trial 25 | preview.jpg | 10 bytes | success=True | BER=0.00000000 
+telegram trial 26 | preview.jpg | 100 bytes | success=True | BER=0.00000000 
+telegram trial 27 | preview.jpg | 2593 bytes | success=True | BER=0.00009527 
+telegram trial 28 | preview.jpg | 10 bytes | success=True | BER=0.00000000 
+telegram trial 29 | preview.jpg | 100 bytes | success=True | BER=0.00000000 
+telegram trial 30 | preview.jpg | 3425 bytes | success=True | BER=0.00009645 
+telegram trial 31 | preview.jpg | 10 bytes | success=True | BER=0.00000000 
+telegram trial 32 | preview.jpg | 100 bytes | success=True | BER=0.00000000 
