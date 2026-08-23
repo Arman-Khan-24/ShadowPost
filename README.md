@@ -1,25 +1,21 @@
 # ShadowPost
 
-DCT-domain image steganography that hides AES-encrypted messages inside native
-JPEG frequency coefficients, designed to survive real-world recompression by
-social platforms (Telegram, Discord, Imgur). Reed–Solomon error correction
-repairs bit errors introduced when a platform re-encodes the image.
+ShadowPost is a native-JPEG DCT steganography system. It encrypts a message,
+protects it with Reed-Solomon error correction, and embeds the resulting bits in
+relative DCT coefficient-pair orderings so that the payload can survive some
+real-world JPEG delivery transforms.
 
-## How it works
+## Locked pipeline
 
-1. **Embedding** operates on native JPEG DCT coefficients via `jpeglib`
-   (`read_dct` / `write_dct`) — never on pixels — so the payload survives the
-   JPEG encoder untouched.
-2. Bits are encoded as the relative magnitude ordering of mid-band coefficient
-   **pairs** within each 8x8 luminance block (2 bits per block), using
-   positions **0 and 2** only, with a deterministic tie-break
-   (`|A| >= |B|` -> bit `1`).
-3. The message is framed as `[2-byte length][12-byte nonce][ciphertext][16-byte tag]`,
-   encrypted once with **AES-256-GCM** (key derived from the passphrase via scrypt),
-   split into 32-byte chunks, and each chunk is protected by **RS(48,32)**
-   (corrects up to 8 byte errors per codeword).
-
-These parameters are locked; see `CURRENT_STATE.md` for details.
+1. Read and write native JPEG DCT coefficients with `jpeglib.read_dct()` and
+   `write_dct()`; embedding never uses pixel-domain DCT.
+2. Embed in luminance coefficient-pair positions 0 and 2 only:
+   `(1,3)` vs `(2,2)`, and `(1,4)` vs `(4,1)`.
+3. Decode ties deterministically: `|A| >= |B|` is bit `1`.
+4. Encrypt the whole message once with AES-256-GCM using a scrypt-derived key.
+   Frame `[2-byte length][12-byte nonce][ciphertext][16-byte tag]`, then split
+   into RS data chunks.
+5. Use fixed RS(48,32): 32 data bytes plus 16 parity bytes per codeword.
 
 ## Quickstart
 
@@ -28,75 +24,78 @@ pip install -r requirements-phase1.txt
 uvicorn app:app --port 8000
 ```
 
-Then open `frontend.html` directly in any browser (no build step, no server
-needed for it) or serve it however you like.
-
-## Web frontend
-
-`frontend.html` is a single self-contained file (plain HTML/CSS/JS, zero
-dependencies):
-
-- **Encode tab** — pick a cover JPEG, type the secret message and a passphrase,
-  click Encode. The stego JPEG downloads automatically; the banner also shows
-  the image's exact byte capacity reported by the API.
-- **Decode tab** — upload a stego JPEG, enter the same passphrase, click Decode.
-  The recovered message is shown on screen.
-- API errors (HTTP 400) are displayed verbatim in a red banner; if the backend
-  is not running you get an explicit "cannot reach localhost:8000" message.
+Open `frontend.html` in a browser for the dependency-free Encode/Decode UI.
 
 ## HTTP API
 
-| Endpoint        | Form fields                     | Returns                                        |
-|-----------------|---------------------------------|------------------------------------------------|
-| `POST /encode`  | `cover` (file), `message`, `passphrase` | stego JPEG + `X-ShadowPost-Max-Bytes` header |
-| `POST /decode`  | `stego` (file), `passphrase`    | `{"message": "..."}`                           |
+| Endpoint | Form fields | Returns |
+|---|---|---|
+| `POST /encode` | `cover`, `message`, `passphrase` | Stego JPEG and `X-ShadowPost-Max-Bytes` |
+| `POST /decode` | `stego`, `passphrase` | Recovered `message` JSON |
 
-Capacity is computed per image from its actual block count; over-capacity
-messages and undecodable images return HTTP 400 with a descriptive detail.
+Capacity is computed from the uploaded JPEG's luminance DCT block grid.
+Over-capacity messages and failed decode/authentication attempts return HTTP 400
+with a descriptive error.
 
-## Platform test bench (Phase 5)
+## Phase 5 platform delivery bench
 
-- `phase5_bench.py` — automated Telegram / Discord / Imgur round trips
-  (credentials read from `TELEGRAM_BOT_TOKEN` + `TELEGRAM_CHAT_ID`,
-  `DISCORD_WEBHOOK_URL`, `IMGUR_CLIENT_ID` env vars; never logged).
-- `manual_platform_test.py` — manual workflow:
-  ```bash
-  python manual_platform_test.py prepare --platform telegram --cover <cover.jpg> --message "hi" --passphrase "pw"
-  # upload phase5_results/manual_upload/telegram.jpg by hand, download the delivered file, then:
-  python manual_platform_test.py check --platform telegram --downloaded-image <downloaded.jpg> --passphrase "pw"
-  ```
-- All trials append to `phase5_results/platform_trials.csv`.
+`phase5_bench.py` runs the exact 15 Phase 1 covers at 10-byte, 100-byte, and
+near-capacity payload sizes for Telegram and Discord. It obtains credentials
+from the process environment or an ignored local `.env`; credentials are never
+written to results.
 
-## Reporting charts (Phase 7)
+The completed matrix in `phase5_results/platform_trials.csv` contains 90 trials:
 
-After trials are complete:
+| Platform | Exact recoveries |
+|---|---:|
+| Telegram | 36/45 (80.0%) |
+| Discord | 45/45 (100.0%) |
+
+Telegram `sendPhoto` is not byte-preserving. A measured arsenal delivery changed
+an 864x864 stego JPEG to 800x800, reducing its luminance DCT grid from 108x108 to
+100x100 blocks (23,328 to 20,000 usable payload bits). Discord webhook delivery
+was byte-preserving in the completed matrix.
+
+Future bench rows include source and delivered width/height fields, in addition
+to platform, trial, cover, payload size, BER, outcome, reason, and timestamp.
+Imgur is pending. Reddit remains out of scope without pre-existing OAuth
+credentials.
+
+`manual_platform_test.py` supports a prepare/upload/check workflow when a manual
+platform test is needed.
+
+## Phase 7 reporting
+
+Run:
 
 ```bash
 python phase7_charts.py
 ```
 
-Writes to `phase7_results/`: success rate per platform, average BER per
-platform, and max embedded payload per cover image (bar chart + table).
+The script reads the 90-row Phase 5 CSV and writes four 150-DPI PNG charts plus
+`summary.txt` to `phase7_results/`:
+
+- Success rate per platform
+- Success rate by small, medium, and near-max payload class
+- Success rate per cover image
+- Overall success/failure summary
 
 ## Repository layout
 
 | Path | Purpose |
-|------|---------|
-| `app.py` | FastAPI service (`/encode`, `/decode`) |
-| `frontend.html` | Browser UI |
-| `test_app.py` | TestClient round-trip and HTTP-400 checks |
-| `phase1_native_dct_experiment.py` | Finalized DCT embed/extract + Phase 1 experiment |
-| `phase2_rs_roundtrip.py` | RS(48,32) round-trip experiment |
+|---|---|
+| `app.py` | FastAPI `/encode` and `/decode` service |
+| `frontend.html` | Dependency-free browser client |
+| `test_app.py` | FastAPI TestClient checks |
+| `phase1_native_dct_experiment.py` | Final native-DCT embed/extract experiment |
+| `phase2_rs_roundtrip.py` | RS(48,32) experiment |
 | `phase3_aes_gcm_roundtrip.py` | AES-256-GCM + RS experiment |
-| `phase5_bench.py`, `manual_platform_test.py` | Platform delivery testing |
-| `phase7_charts.py` | Result charts |
-| `phase*_results*/` | Experiment data |
-| `CURRENT_STATE.md` | Detailed technical state |
+| `phase5_bench.py` | Telegram/Discord delivery bench |
+| `phase5_results/platform_trials.csv` | Completed 90-trial platform matrix |
+| `phase7_charts.py`, `phase7_results/` | Charts and numerical summary |
 
-Reddit delivery was skipped by policy unless pre-existing OAuth credentials are supplied.
+## Security
 
-## Security notes
-
-The passphrase never leaves your machine in plaintext form beyond the local
-API call; nothing is persisted by the app. Bench scripts store only cover
-names, sizes, BERs, and timestamps — never passphrases or plaintexts.
+The app does not persist plaintext messages or passphrases. Bench output stores
+only trial metadata, dimensions, BER, results, and timestamps. `run_trials.bat`
+and `.env` are ignored because they contain live platform credentials.
