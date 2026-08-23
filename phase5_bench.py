@@ -6,6 +6,7 @@ DISCORD_WEBHOOK_URL in the process environment; they are never logged.
 from __future__ import annotations
 
 import csv
+import io
 import math
 import os
 import tempfile
@@ -16,6 +17,7 @@ import numpy as np
 import requests
 from dotenv import load_dotenv
 from fastapi.testclient import TestClient
+from PIL import Image
 
 from app import app, capacity_for_jpeg
 from phase1_native_dct_experiment import extract_native_dct
@@ -29,7 +31,8 @@ RESULTS_FILE = ROOT / "phase5_results" / "platform_trials.csv"
 PHASE1_TRIALS_FILE = ROOT / "phase1_results_positions_0_2_tie_fixed" / "phase1_trials.csv"
 PASSPHRASE = "ShadowPost Phase 5 test passphrase"
 CODEWORD_BITS = 48 * 8
-CSV_FIELDS = ("platform", "trial", "cover_name", "payload_size_bytes", "success", "ber", "failure_reason", "timestamp")
+CSV_FIELDS = ("platform", "trial", "cover_name", "payload_size_bytes", "cover_width", "cover_height",
+              "delivered_width", "delivered_height", "success", "ber", "failure_reason", "timestamp")
 
 
 class StructuralFailure(RuntimeError):
@@ -116,11 +119,22 @@ def cover_images() -> list[Path]:
     return covers
 
 
+def image_dimensions(source: Path | bytes) -> tuple[int, int]:
+    """Read image dimensions without re-encoding the JPEG."""
+    if isinstance(source, Path):
+        with Image.open(source) as image:
+            return image.size
+    with Image.open(io.BytesIO(source)) as image:
+        return image.size
+
+
 def run_trial(client: TestClient, platform: str, deliver, cover: Path, trial: int, payload_size: int) -> dict[str, object]:
     message = message_of_size(payload_size)
+    cover_width, cover_height = image_dimensions(cover)
     row: dict[str, object] = {
         "platform": platform, "trial": trial, "cover_name": cover.relative_to(COVERS_DIR).as_posix(),
-        "payload_size_bytes": payload_size, "success": False, "ber": "",
+        "payload_size_bytes": payload_size, "cover_width": cover_width, "cover_height": cover_height,
+        "delivered_width": "", "delivered_height": "", "success": False, "ber": "",
         "failure_reason": "", "timestamp": datetime.now(timezone.utc).isoformat(),
     }
     try:
@@ -131,6 +145,7 @@ def run_trial(client: TestClient, platform: str, deliver, cover: Path, trial: in
             raise StructuralFailure(f"local /encode failed: HTTP {encoded.status_code}: {encoded.text}")
         local_stego = encoded.content
         delivered = deliver(local_stego, f"shadowpost_{cover.stem}_{payload_size}.jpg")
+        row["delivered_width"], row["delivered_height"] = image_dimensions(delivered)
         bit_count = required_codeword_bits(message)
         with tempfile.TemporaryDirectory() as temporary_directory:
             temporary = Path(temporary_directory)
@@ -172,7 +187,8 @@ def main() -> None:
             except StructuralFailure as exc:
                 trial += 1
                 rows.append({"platform": platform, "trial": trial, "cover_name": cover.name,
-                             "payload_size_bytes": "", "success": False, "ber": "",
+                             "payload_size_bytes": "", "cover_width": "", "cover_height": "",
+                             "delivered_width": "", "delivered_height": "", "success": False, "ber": "",
                              "failure_reason": str(exc), "timestamp": datetime.now(timezone.utc).isoformat()})
                 continue
             for size in sizes:

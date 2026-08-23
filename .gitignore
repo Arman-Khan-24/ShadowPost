@@ -1,2 +1,3 @@
 # Contains live platform credentials; must remain local.
 run_trials.bat
+.env
