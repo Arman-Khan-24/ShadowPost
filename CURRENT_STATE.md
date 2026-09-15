@@ -40,7 +40,8 @@ structure through lossy transcoding and spatial scaling.
 - `phase5_results/*_trials.csv` - platform-specific trial datasets.
 - `phase5_results/RESEARCH_SUMMARY.md` - benchmark summary.
 - `phase7_charts.py` and `phase7_results/` - charts and numerical summaries.
-- `make_ieee_paper.py` and `ShadowPost_IEEE_Paper.pdf` - paper source and PDF.
+- `make_ieee_paper.py` and `ShadowPost_IEEE_Paper.pdf` - source and verified
+  eight-page, two-column paper.
 
 ## Key Implementation Files
 
