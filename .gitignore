@@ -1,3 +1,10 @@
 # Contains live platform credentials; must remain local.
 run_trials.bat
 .env
+
+# Generated local artifacts.
+__pycache__/
+*.py[cod]
+phase5_results/*.log
+phase5_results/*.pid
+paper_render/

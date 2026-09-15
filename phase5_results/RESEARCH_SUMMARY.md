@@ -1,37 +1,42 @@
-# ShadowPost: Empirical Multi-Platform Survivability Study
-## Research Benchmark Summary Report
+# ShadowPost: Multi-Platform Survivability Study
 
-### 1. Abstract & Experimental Design
-This study benchmarks the survivability of native-JPEG Discrete Cosine Transform (DCT) steganography combined with Reed-Solomon RS(48,32) error correction and AES-256-GCM authenticated encryption across six real-world social media and instant messaging transmission pipelines.
+## Experimental Design
 
-A standard test matrix comprising 15 diverse cover images across 3 payload sizes (10 B, 100 B, and near-maximum capacity) was subjected to delivery across each channel (45 trials per channel, total N = 270 trials).
+The benchmark evaluates native-JPEG DCT steganography with Reed-Solomon
+RS(48,32) error correction and AES-256-GCM encryption across six delivery modes.
+The structured cohort uses 15 covers and three payload classes for Telegram,
+Discord, and WhatsApp Document. The feed/media cohort contains 45 fixed
+100-byte trials for Twitter/X, Instagram, and WhatsApp Image. The complete
+master dataset contains 270 trials.
 
----
+## Results
 
-### 2. Comprehensive Comparative Results Table
+| Platform | Delivery mode | Trials | Exact recoveries | Success rate | Mean recorded BER |
+|---|---|---:|---:|---:|---:|
+| Discord | Webhook attachment | 45 | 45 | 100.0% | 0.00000000 |
+| WhatsApp | Document | 45 | 45 | 100.0% | 0.00000000 |
+| Telegram | `sendPhoto` | 45 | 36 | 80.0% | 0.02743540 |
+| Twitter / X | Public image post | 45 | 0 | 0.0% | 1.00000000 |
+| Instagram | Public feed post | 45 | 0 | 0.0% | 1.00000000 |
+| WhatsApp | Standard image | 45 | 0 | 0.0% | 1.00000000 |
+| **Overall** | **All six modes** | **270** | **126** | **46.7%** | **0.51727204** |
 
-| Platform | Channel / Delivery Mode | Total Trials (N) | Exact Message Recoveries | Success Rate (%) | Mean Bit Error Rate (BER) | Channel Preservation Nature | Measurement Methodology |
-|:---|:---|:---:|:---:|:---:|:---:|:---|:---:|
-| **Discord** | Webhook attachment | 45 | 45 | **100.0%** | 0.00000000 | Byte-preserving | Automated API loop |
-| **WhatsApp** | Document mode | 45 | 45 | **100.0%** | 0.00000000 | Byte-preserving file transfer | Empirical trial |
-| **Telegram** | sendPhoto | 45 | 36 | **80.0%** | 0.07086806 | Constrained re-compression | Automated Bot API loop |
-| **Twitter / X** | Public timeline post | 45 | 0 | **0.0%** | 1.00000000 | Aggressive lossy + dynamic downscaling | Verified delivered download |
-| **Instagram** | Public feed post | 45 | 0 | **0.0%** | 1.00000000 | Aggressive lossy + 1080px downsampling | Verified delivered download |
-| **WhatsApp** | Standard image | 45 | 0 | **0.0%** | 1.00000000 | Mandatory lossy transcode + downscaling | Empirical trial |
-| **Total / Overall** | **All 6 Channels** | **270** | **126** | **46.7%** | — | — | Full Empirical Suite |
+Mean BER is calculated from rows with a recorded BER; capacity-rejected trials
+are excluded from that calculation.
 
----
+## Observed Delivery Behavior
 
-### 3. Failure Mode & Survivability Mechanics
-1. **Byte-Preserving Channels (100% Recovery)**:
-   - **Discord Attachment** and **WhatsApp Document Mode** transmit the original JPEG bitstream intact without applying server-side transcoding or spatial resampling.
-   - The luminance DCT coefficient arrays and Reed-Solomon codeword structures remain completely unperturbed, yielding BER = 0.00000000.
+1. Discord attachments and WhatsApp documents preserved the original JPEG
+   structure and recovered all tested messages.
+2. Telegram recovered most payloads but downscaled selected images, causing DCT
+   block-grid registration failures for affected covers.
+3. Twitter/X, Instagram, and standard WhatsApp image delivery applied lossy
+   transcoding and spatial scaling. The resulting DCT structure did not preserve
+   the embedded coefficient relationships, so no exact messages were recovered.
 
-2. **Dimension-Constrained Channels (80% Recovery)**:
-   - **Telegram sendPhoto** re-compresses standard images mildly but generally maintains block dimensions for images under 1280px.
-   - However, for high-resolution images (e.g. 3840x2160), Telegram scales the image down to 1280x720, breaking the original 8x8 block grid alignment and causing complete parity decoding failure (BER ~ 0.50).
+## Reproducibility Artifacts
 
-3. **Lossy & Rescaling Social Feeds (0% Recovery)**:
-   - **Twitter/X, Instagram, and WhatsApp Standard Image** perform mandatory server-side transcoding.
-   - Spatial downscaling (e.g. downsampling to 1080px or arbitrary mobile viewport dimensions) interpolates adjacent pixels across block boundaries, permanently destroying the original 8x8 DCT grid synchronization.
-   - Heavy JPEG quantization tables round the embedded mid-frequency AC coefficient pairs to identical or zero values, preventing synchronization marker ('SHDW') detection.
+- `platform_trials.csv` is the canonical master dataset.
+- The six `*_trials.csv` files provide platform-specific rows.
+- `phase7_charts.py` generates benchmark charts in `phase7_results/`.
+- Downloaded Twitter and Instagram media are under `downloaded/`.
