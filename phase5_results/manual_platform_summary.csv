@@ -1,0 +1,4 @@
+platform,delivery_mode,trials,successful,failed,success_rate,evidence_status,notes
+whatsapp,image,45,0,45,0.0,user_reported,"All prepared test images sent as normal WhatsApp images; extraction failed for every image. BER/download-level measurements are not recorded."
+whatsapp,document,45,45,0,1.0,user_reported,"Same 45 prepared test images sent as WhatsApp documents; extraction succeeded for every image. BER/download-level measurements are not recorded."
+twitter,post_image,,,,,pending_verification,"User reports an uploaded Twitter/X test, but no delivered image has been downloaded and decoded in this workspace yet."
