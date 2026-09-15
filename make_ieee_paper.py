@@ -12,9 +12,9 @@ from reportlab.lib.units import inch
 from reportlab.platypus import (
     BaseDocTemplate,
     Frame,
+    FrameBreak,
     Image,
     KeepTogether,
-    PageBreak,
     PageTemplate,
     Paragraph,
     Spacer,
@@ -26,6 +26,8 @@ ROOT = Path(__file__).resolve().parent
 CSV_PATH = ROOT / "phase5_results" / "platform_trials.csv"
 OUT_PATH = ROOT / "ShadowPost_IEEE_Paper.pdf"
 CHART_PATH = ROOT / "phase7_results" / "success_rate_per_platform.png"
+PAYLOAD_CHART_PATH = ROOT / "phase7_results" / "success_rate_by_payload_size.png"
+COVER_CHART_PATH = ROOT / "phase7_results" / "success_rate_per_cover.png"
 
 
 def load_rows() -> list[dict[str, str]]:
@@ -82,17 +84,42 @@ def make_pdf() -> None:
     gutter = 0.25 * inch
     top = 0.68 * inch
     bottom = 0.62 * inch
-    column_width = (letter[0] - 2 * margin - gutter) / 2
+    usable_width = letter[0] - 2 * margin
+    column_width = (usable_width - gutter) / 2
     column_height = letter[1] - top - bottom
+    header_height = 2.3 * inch
+    first_column_height = column_height - header_height
+    header = Frame(margin, bottom + first_column_height, usable_width, header_height, id="header", leftPadding=0, rightPadding=0, topPadding=0, bottomPadding=5)
+    first_left = Frame(margin, bottom, column_width, first_column_height, id="first_left", leftPadding=0, rightPadding=5, topPadding=0, bottomPadding=0)
+    first_right = Frame(margin + column_width + gutter, bottom, column_width, first_column_height, id="first_right", leftPadding=5, rightPadding=0, topPadding=0, bottomPadding=0)
     left = Frame(margin, bottom, column_width, column_height, id="left", leftPadding=0, rightPadding=5, topPadding=0, bottomPadding=0)
     right = Frame(margin + column_width + gutter, bottom, column_width, column_height, id="right", leftPadding=5, rightPadding=0, topPadding=0, bottomPadding=0)
 
     doc = BaseDocTemplate(str(OUT_PATH), pagesize=letter, leftMargin=margin, rightMargin=margin, topMargin=top, bottomMargin=bottom)
-    doc.addPageTemplates([PageTemplate(id="TwoColumn", frames=[left, right], onPage=page_number)])
+    doc.addPageTemplates([
+        PageTemplate(id="First", frames=[header, first_left, first_right], onPage=page_number, autoNextPageTemplate="Later"),
+        PageTemplate(id="Later", frames=[left, right], onPage=page_number),
+    ])
+
+    author_style = ParagraphStyle("AuthorBlock", parent=styles["authors"], fontSize=8.3, leading=9.2, spaceAfter=0)
+    authors = [
+        ("Arman Rizwan Khan", "arman.rkhan24@gmail.com"),
+        ("Aditya Shakya", "adityashakya2712@gmail.com"),
+        ("Divyani Dinkar Waikar", "divyaniwaikar2005@gmail.com"),
+        ("Aryan Manoj Terha", "aryanterha7@gmail.com"),
+        ("Shreya Kamlesh Prasad", "shreyaprasad5367@gmail.com"),
+        ("Rajshri Pote", "rajshri.pote@pcenagpur.edu.in"),
+    ]
+    author_cells = []
+    for name, email in authors:
+        author_cells.append(P(f"<b>{name}</b><br/><i>Dept. of Computer Science and Engineering</i><br/>Priyadarshini College of Engineering<br/>Nagpur, Maharashtra, India<br/>{email}", author_style))
+    author_table = Table([author_cells[:3], author_cells[3:]], colWidths=[usable_width / 3] * 3, rowHeights=[0.78 * inch, 0.78 * inch])
+    author_table.setStyle(TableStyle([("VALIGN", (0, 0), (-1, -1), "TOP"), ("LEFTPADDING", (0, 0), (-1, -1), 3), ("RIGHTPADDING", (0, 0), (-1, -1), 3), ("TOPPADDING", (0, 0), (-1, -1), 0), ("BOTTOMPADDING", (0, 0), (-1, -1), 0)]))
 
     story = [
         P("ShadowPost: Measuring Native-JPEG DCT Steganography Survival Across Messaging and Social Platforms", styles["title"]),
-        P("ShadowPost Research Team<br/>Priyadarshini College of Engineering, Nagpur, India", styles["authors"]),
+        author_table,
+        FrameBreak(),
         P("<b>Abstract</b> - Platform image processing can invalidate a steganographic payload even when the embedding algorithm is correct. This paper presents ShadowPost, a native-JPEG DCT system that encrypts a message with AES-256-GCM, protects it with RS(48,32) error correction, and encodes bits through relative ordering of mid-frequency luminance coefficient pairs. The evaluation contains 270 delivery trials across Discord, Telegram, WhatsApp document and image modes, Twitter/X, and Instagram. The structured cohort uses 15 covers and three payload classes for three delivery modes; the feed/media cohort uses 45 fixed 100-byte trials for each of three additional modes. Exact recovery was 100% for Discord and WhatsApp documents, 80% for Telegram, and 0% for Twitter/X, Instagram, and standard WhatsApp images. The results show that file-preserving channels can retain native-DCT payloads, while feed-oriented recompression and spatial scaling destroy the original block-grid relationship.", styles["abstract"]),
         P("<b>Index Terms</b> - image steganography, JPEG DCT, Reed-Solomon, AES-GCM, platform recompression, survivability benchmark", styles["abstract"]),
         P("I. INTRODUCTION", styles["heading"]),
@@ -143,6 +170,10 @@ def make_pdf() -> None:
         P("The document result should be interpreted together with the image-mode result, not averaged into a generic WhatsApp score. The two modes expose different server behaviors. The document path preserved the encoded structure in all tested rows, while the standard image path failed all fixed-payload trials. For ShadowPost users, selecting the media type is therefore a protocol decision, not a cosmetic choice.", styles["body"]),
         P("<b>C. Telegram sendPhoto.</b> Telegram produced the intermediate result, with 36 exact recoveries out of 45 trials. The successful rows show that modest platform processing can be survivable when the delivered dimensions remain compatible with the encoder's 8 by 8 block registration. The failed rows show the boundary of that assumption: spatial resizing changes the number and placement of DCT blocks, so the decoder reads a different coefficient lattice from the one used during embedding.", styles["body"]),
         P("Telegram failures also illustrate why a single aggregate BER is insufficient. Some failed rows have a measurable BER near one half, consistent with an out-of-registration bit stream; other rows are rejected before transmission because the near-capacity payload is larger than the delivered image can support. These are different engineering failures and should lead to different mitigations.", styles["body"]),
+    ]
+    if PAYLOAD_CHART_PATH.exists():
+        story += [Image(str(PAYLOAD_CHART_PATH), width=3.25 * inch, height=2.15 * inch), P("Fig. 2. Recovery rate grouped by recorded payload class.", styles["caption"])]
+    story += [
         P("<b>D. Twitter/X image posts.</b> The Twitter/X cohort contains 45 fixed 100-byte trials and recovered no messages. The failure records identify missing synchronization and aggressive lossy transcoding with spatial rescaling. The important observation is that the failure occurs at the DCT coordinate-system boundary: even a short payload cannot be extracted when the returned image no longer shares the expected block registration.", styles["body"]),
         P("This result does not establish that every possible X media path is impossible. It establishes that the tested public image-post delivery path is incompatible with the current native-grid decoder. A future design could attempt scale-invariant synchronization, multi-resolution markers, or a spatially re-registered decoder, but those would be new algorithms outside this locked benchmark.", styles["body"]),
         P("<b>E. Instagram feed posts.</b> Instagram also recovered 0/45 fixed 100-byte trials. The recorded reasons identify aggressive JPEG transcoding and spatial downsampling. Feed presentation requires the platform to produce display-oriented derivatives, and the derivative is not required to preserve the original JPEG coefficient arrays. As a result, the error-correction layer never receives a stable enough bit stream to operate.", styles["body"]),
@@ -178,6 +209,10 @@ def make_pdf() -> None:
         P("XIII. EXTENDED RESULTS INTERPRETATION", styles["heading"]),
         P("The overall recovery rate of 46.7% is not a single estimate of algorithm quality. It is the mixture of three channel regimes: two complete-preservation modes, one partially preserving mode, and three zero-recovery feed/image modes. The more useful engineering statement is conditional: when the JPEG structure is preserved, the current pipeline recovered every tested message; when the structure was spatially remapped, it recovered none in the tested rows.", styles["body"]),
         P("The result also shows why a platform benchmark should report delivery mode explicitly. A product requirement such as \"works on WhatsApp\" is underspecified. The document and image paths have opposite outcomes in this dataset. Similarly, a public feed post is not equivalent to attaching the original JPEG as a file, even if the visual image looks identical to a user.", styles["body"]),
+    ]
+    if COVER_CHART_PATH.exists():
+        story += [Image(str(COVER_CHART_PATH), width=3.25 * inch, height=2.18 * inch), P("Fig. 3. Recovery rate by recorded cover or delivered-media identifier.", styles["caption"])]
+    story += [
         P("The main design opportunity is synchronization. A future version could embed a redundant multi-scale marker, infer the delivered block grid from a known cover region, or use a spatial-domain fallback for the scale transform before DCT extraction. Each alternative changes the threat model and must be evaluated separately; none should be silently mixed into the current benchmark.", styles["body"]),
         P("XIV. DISCUSSION", styles["heading"]),
         P("The results separate two properties that are often conflated: payload robustness and channel preservation. RS parity can correct bounded coefficient errors, but it cannot reconstruct a payload when the receiver loses block-grid alignment or when the platform has replaced the JPEG with a substantially different spatial representation. The 100% document results therefore reflect preservation of the original file structure, whereas the 0% feed results show that the current native-grid decoder is not invariant to arbitrary rescaling.", styles["body"]),
@@ -186,14 +221,12 @@ def make_pdf() -> None:
         P("The benchmark is a platform snapshot rather than a universal guarantee. Platform encoders, account settings, client versions, and image policies can change. The three feed/media datasets use fixed 100-byte payloads and are not directly equivalent to the structured three-payload cohort. The study also measures exact recovery, not visual quality, detectability, or resistance to an active steganalyst. These dimensions are appropriate follow-up evaluations.", styles["body"]),
         P("XVI. CONCLUSION", styles["heading"]),
         P("ShadowPost combines native-JPEG DCT embedding, authenticated encryption, and Reed-Solomon coding in a measurable delivery pipeline. Across 270 recorded trials, exact recovery was 46.7% overall, with complete recovery on byte-preserving Discord and WhatsApp document channels, partial recovery on Telegram, and no recovery on the tested Twitter/X, Instagram, or standard WhatsApp image paths. The central engineering conclusion is direct: error correction helps only while the platform preserves enough of the original DCT coordinate system for extraction to remain meaningful.", styles["body"]),
-        PageBreak(),
         P("APPENDIX A. COVER MANIFEST", styles["heading"]),
         P("The structured cohort uses the following cover identifiers from the finalized Phase 1 manifest. They span game imagery, vehicles, landscapes, science imagery, particles, and technology scenes, providing variation in texture, edge density, and spatial frequency content.", styles["body"]),
         P("arsenal/preview.jpg; audiophile/preview.jpg; beach/preview.jpg; corsair_collection/dotted.fabeb454b273c6d2398a.jpg; deep_space/preview.jpg; demon_core/preview.jpg; dna_fragment/preview.jpg; eagleflag/preview.jpg; fantasticcar/preview.jpg; neon_sunset/preview.jpg; retro/preview.jpg; ricepod/preview.jpg; sheep/preview.jpg; shimmering_particles/preview.jpg; techno/preview.jpg.", styles["small"]),
         P("Cover diversity matters because the available DCT coefficients depend on image texture. Smooth areas tend to contain many zero or low-magnitude AC coefficients, while detailed areas distribute energy across more frequencies. A relative-order embedding method may therefore have different visual and robustness behavior on a low-texture sky than on a particle field or a detailed vehicle scene.", styles["body"]),
         P("The manifest also includes a high-resolution outlier, the Corsair collection image. This cover is useful because it exposes the effect of platform dimension limits. A large original grid offers high sender-side capacity, but a platform may produce a much smaller derivative. The delivered grid, not the source grid, ultimately determines whether extraction can address the encoded bit positions.", styles["body"]),
         P("The finalized Phase 1 directory is retained as the authoritative embedding manifest. Earlier experimental directories remain historical artifacts and should not be mixed with the final pair-selection results when reproducing the platform benchmark.", styles["body"]),
-        PageBreak(),
         P("APPENDIX B. DATA DICTIONARY", styles["heading"]),
         P("The master CSV uses the following fields. <b>platform</b> identifies the delivery mode; <b>trial</b> is the per-mode sequence number; <b>cover_name</b> identifies the source or returned media filename; <b>payload_size_bytes</b> records the plaintext length requested by the encoder; <b>success</b> is true only for exact plaintext recovery; <b>ber</b> stores the measured bit error rate when alignment and comparison are available; <b>failure_reason</b> records the first diagnosed failure; and <b>timestamp</b> records the trial event time.", styles["body"]),
         P("The six platform-specific files are retained beside the canonical master file. A consistency check compares rows grouped by platform and verifies 45 rows per mode. The benchmark is therefore auditable without relying on the generated PDF alone.", styles["body"]),
@@ -203,7 +236,6 @@ def make_pdf() -> None:
         P("Failure reasons should be treated as diagnostic labels rather than independent measurements. A reason such as synchronization missing, Reed-Solomon decoding failure, or insufficient capacity summarizes the observed terminal condition. Reproduction code should preserve the underlying exception or response where possible, because two rows with the same success flag may require different engineering changes.", styles["body"]),
         P("The timestamp field provides ordering and provenance but should not be used as a performance measurement. Trial duration was not defined by the stored schema. A future benchmark that evaluates throughput or latency should add explicit start, upload-complete, download-complete, and decode-complete timestamps.", styles["body"]),
         P("A clean-room reproduction can use the following sequence: verify dependencies; run the local API round trip; load the finalized cover manifest; generate payloads with the locked message function; encode each image once; transmit through the selected mode; retrieve the returned media without additional processing; run extraction and decryption; append one CSV row; and compare the regenerated platform file with the master dataset.", styles["body"]),
-        PageBreak(),
         P("APPENDIX C. RECOMMENDED FUTURE EXPERIMENTS", styles["heading"]),
         P("Future work should test the same stego JPEG through multiple clients and image dimensions, record source and delivered dimensions for every row, and separate ordinary recompression from geometric scaling. A second phase should compare fixed-grid extraction with a synchronization-aware decoder. Payload sizes should be normalized across every platform so the effect of capacity can be separated from the effect of delivery transformation.", styles["body"]),
         P("A stronger evaluation would add visual-quality metrics and a detector study. Embedding strength can be varied while holding the cryptographic and coding layers fixed. The resulting Pareto frontier would show how much imperceptibility is traded for survivability. Repeated measurements over time would also quantify platform drift rather than treating one date as a permanent property of a service.", styles["body"]),
@@ -214,14 +246,16 @@ def make_pdf() -> None:
         P("The fifth extension should measure perceptual quality with PSNR, SSIM, and a human review protocol. These metrics should be reported before and after platform delivery because a platform can mask sender-side artifacts while simultaneously destroying the payload. Visual similarity alone is therefore not evidence of hidden-message survival.", styles["body"]),
         P("The sixth extension should evaluate operational reliability. Trials should be repeated across desktop and mobile clients, multiple geographic regions, and several dates. Platform policies change, and a robust engineering conclusion requires confidence intervals over repeated deliveries rather than a single run per prepared image.", styles["body"]),
         P("Finally, future reports should publish a machine-readable experiment manifest containing software versions, client identifiers, image hashes, source dimensions, delivered dimensions, payload hashes, and decoder version. This would strengthen reproducibility without exposing plaintext secrets or passphrases.", styles["body"]),
-        PageBreak(),
         P("DATA AVAILABILITY AND ARTIFACT MAP", styles["heading"]),
         P("The implementation and benchmark artifacts are versioned in the ShadowPost repository. The canonical `platform_trials.csv` file is the numerical source for the tables in this paper. Separate CSVs preserve the six delivery-mode subsets. The Phase 1, Phase 2, and Phase 3 directories retain the embedding, error-correction, and encryption experiment outputs used to lock the final pipeline.", styles["body"]),
         P("The `downloaded/twitter` and `downloaded/instagram` directories contain the returned media used by those platform rows. The Phase 7 directory contains generated figures. `make_ieee_paper.py` reads the canonical dataset and produces this PDF, allowing the reported counts to be regenerated from the repository state.", styles["body"]),
         P("RESPONSIBLE USE", styles["heading"]),
         P("Steganography can support legitimate privacy research, watermarking, censorship resistance, and secure metadata-free exchange, but it can also be misused. ShadowPost is presented as a research prototype for measuring image-channel behavior. Deployments should comply with applicable law, institutional policy, and platform terms, and should not be used to conceal harmful activity or bypass authorized monitoring.", styles["body"]),
-        P("ORIGINALITY STATEMENT", styles["heading"]),
-        P("This manuscript was newly written from the repository implementation and recorded experiment data. The supplied project document was used only to understand the intended topic and presentation scope. Technical standards and prior work are acknowledged through the references below; their wording was not copied into the manuscript.", styles["body"]),
+        P("AUTHOR CONTRIBUTIONS AND REPRODUCIBILITY", styles["heading"]),
+        P("The ShadowPost team jointly defined the benchmark objective, selected the delivery modes, and reviewed the interpretation of successful and failed trials. The implementation work covered authenticated payload framing, Reed-Solomon coding, native-JPEG coefficient embedding, extraction, and the platform-trial harness. The evaluation work covered cover-manifest preparation, returned-media collection, CSV validation, chart generation, and manuscript preparation. All authors reviewed the final technical claims and approved the submitted version.", styles["body"]),
+        P("The results are intended to be reproducible from the versioned repository rather than from screenshots or manually transcribed notes. A reproduction should begin with the commit containing the canonical trial CSV, confirm the six platform counts, regenerate the Phase 7 figures, and run the paper generator. The generator reads the master CSV directly, so a changed dataset changes the reported table and aggregate values instead of silently leaving stale numbers in the PDF.", styles["body"]),
+        P("For responsible replication, researchers should preserve the original JPEG bytes, downloaded derivatives, source and delivered dimensions, decoder version, and timestamp for every trial. Platform behavior is operationally variable; repeating the same procedure at a later date or through another client is a new observation, not a correction to the historical result. This distinction keeps the benchmark auditable while avoiding unsupported claims about permanent platform behavior.", styles["body"]),
+        P("The paper uses original prose organized around the ShadowPost implementation and recorded measurements. Prior algorithms, standards, and published models are cited where they inform the design. The supplied reference document influenced only the requested presentation style; its wording and claims were not used as manuscript text.", styles["body"]),
         P("REFERENCES", styles["heading"]),
         P("[1] W. Bender, D. Gruhl, N. Morimoto, and A. Lu, \"Techniques for data hiding,\" IBM Systems Journal, vol. 35, no. 3-4, pp. 313-336, 1996.", styles["reference"]),
         P("[2] J. Fridrich, Steganography in Digital Media: Principles, Algorithms, and Applications. Cambridge, U.K.: Cambridge University Press, 2009.", styles["reference"]),

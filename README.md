@@ -79,7 +79,7 @@ The script reads the Phase 5 dataset and writes charts and summaries to
 | `phase7_charts.py`, `phase7_results/` | Reports and charts |
 | `downloaded/` | Downloaded Twitter and Instagram trial images |
 | `make_ieee_paper.py` | Generates the two-column IEEE-style paper |
-| `ShadowPost_IEEE_Paper.pdf` | Eight-page, two-column IEEE-style research paper |
+| `ShadowPost_IEEE_Paper.pdf` | Seven-page, two-column IEEE-style research paper |
 
 ## Security
 
