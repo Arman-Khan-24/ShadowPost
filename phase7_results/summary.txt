@@ -1,13 +1,17 @@
-ShadowPost Phase 7 summary
-Trials: 270
-Recovered exactly: 126 (46.7%)
+ShadowPost Phase 7 Multi-Platform Benchmark Summary
+Total Trials (N): 270
+Recovered Exactly: 126 (46.7%)
 Failed: 144 (53.3%)
 
 Success rate per platform:
-- telegram: 36/45 (80.0%)
-- discord: 45/45 (100.0%)
+- Discord (Webhook)        : 45/45 (100.0%)
+- WhatsApp (Document)      : 45/45 (100.0%)
+- Telegram (sendPhoto)     : 36/45 (80.0%)
+- Twitter / X (Post)       : 0/45 (0.0%)
+- Instagram (Post)         : 0/45 (0.0%)
+- WhatsApp (Image)         : 0/45 (0.0%)
 
 Success rate by payload class:
-- small (10 B): telegram 93.3%, discord 100.0%
-- medium (100 B): telegram 93.3%, discord 100.0%
-- large (near max): telegram 53.3%, discord 100.0%
+- small (10 B): discord 100.0%, whatsapp_document 100.0%, telegram 93.3%, twitter 0.0%, instagram 0.0%, whatsapp_image 0.0%
+- medium (100 B): discord 100.0%, whatsapp_document 100.0%, telegram 93.3%, twitter 0.0%, instagram 0.0%, whatsapp_image 0.0%
+- large (near max): discord 100.0%, whatsapp_document 100.0%, telegram 53.3%, twitter 0.0%, instagram 0.0%, whatsapp_image 0.0%
