@@ -17,13 +17,15 @@ from fastapi.testclient import TestClient
 
 from app import app
 from phase1_native_dct_experiment import extract_native_dct
+from PIL import Image
 
 ROOT = Path(__file__).resolve().parent
 RESULTS = ROOT / "phase5_results"
 UPLOADS = RESULTS / "manual_upload"
 TRIAL_CSV = RESULTS / "platform_trials.csv"
 CODEWORD_BITS = 48 * 8
-CSV_FIELDS = ("platform", "trial", "cover_name", "payload_size_bytes", "success", "ber", "failure_reason", "timestamp")
+CSV_FIELDS = ("platform", "trial", "cover_name", "payload_size_bytes", "cover_width", "cover_height",
+              "delivered_width", "delivered_height", "success", "ber", "failure_reason", "timestamp")
 
 
 def safe_platform_name(value: str) -> str:
@@ -31,6 +33,22 @@ def safe_platform_name(value: str) -> str:
     if not cleaned:
         raise ValueError("platform name must contain letters or digits")
     return cleaned
+
+
+def image_dimensions(path: Path) -> tuple[int, int]:
+    with Image.open(path) as image:
+        return image.size
+
+
+def classify_failure(exc: Exception) -> str:
+    message = str(exc).lower()
+    if "capacity" in message or "too few blocks" in message:
+        return "capacity_failure"
+    if "reedsolomon" in message or "reed-solomon" in message:
+        return "reed_solomon_decode_failed"
+    if "authenticate" in message or "gcm" in message:
+        return "authentication_failed"
+    return "fixed_grid_extraction_failed"
 
 
 def prepare(args: argparse.Namespace) -> None:
@@ -50,8 +68,9 @@ def prepare(args: argparse.Namespace) -> None:
     # no passphrase or plaintext is persisted.
     plaintext_bytes = len(args.message.encode("utf-8"))
     codewords = (2 + 12 + plaintext_bytes + 16 + 31) // 32
+    cover_width, cover_height = image_dimensions(cover)
     (UPLOADS / f"{platform}.json").write_text(json.dumps({"cover_name": cover.name, "payload_size_bytes": plaintext_bytes,
-        "codeword_bits": codewords * CODEWORD_BITS}, indent=2) + "\n", encoding="utf-8")
+        "codeword_bits": codewords * CODEWORD_BITS, "cover_width": cover_width, "cover_height": cover_height}, indent=2) + "\n", encoding="utf-8")
     print(f"prepared {destination}")
 
 
@@ -74,8 +93,11 @@ def check(args: argparse.Namespace) -> None:
     if not metadata_path.is_file() or not original_path.is_file():
         raise ValueError(f"run /prepare for platform '{platform}' first")
     metadata = json.loads(metadata_path.read_text(encoding="utf-8"))
+    delivered_width, delivered_height = image_dimensions(downloaded)
     row: dict[str, object] = {"platform": platform, "trial": "manual", "cover_name": metadata["cover_name"],
-        "payload_size_bytes": metadata["payload_size_bytes"], "success": False, "ber": "", "failure_reason": "",
+        "payload_size_bytes": metadata["payload_size_bytes"], "cover_width": metadata.get("cover_width", ""),
+        "cover_height": metadata.get("cover_height", ""), "delivered_width": delivered_width,
+        "delivered_height": delivered_height, "success": False, "ber": "", "failure_reason": "",
         "timestamp": datetime.now(timezone.utc).isoformat()}
     try:
         bits = int(metadata["codeword_bits"])
@@ -89,7 +111,7 @@ def check(args: argparse.Namespace) -> None:
             raise RuntimeError(f"/decode failed: HTTP {response.status_code}: {response.text}")
         row["success"] = True
     except Exception as exc:
-        row["failure_reason"] = f"{type(exc).__name__}: {exc}"
+        row["failure_reason"] = classify_failure(exc)
     append_row(row)
     print(f"platform={platform} success={row['success']} ber={row['ber']} reason={row['failure_reason']}")
 

@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import csv
+import math
 import statistics
 from pathlib import Path
 
@@ -27,7 +28,6 @@ CSV_PATH = ROOT / "phase5_results" / "platform_trials.csv"
 OUT_PATH = ROOT / "ShadowPost_IEEE_Paper.pdf"
 CHART_PATH = ROOT / "phase7_results" / "success_rate_per_platform.png"
 PAYLOAD_CHART_PATH = ROOT / "phase7_results" / "success_rate_by_payload_size.png"
-COVER_CHART_PATH = ROOT / "phase7_results" / "success_rate_per_cover.png"
 
 
 def load_rows() -> list[dict[str, str]]:
@@ -35,13 +35,24 @@ def load_rows() -> list[dict[str, str]]:
         return list(csv.DictReader(handle))
 
 
-def metrics(rows: list[dict[str, str]]) -> dict[str, tuple[int, int, float]]:
+def wilson_interval(successes: int, trials: int, z: float = 1.96) -> tuple[float, float]:
+    if trials == 0:
+        return 0.0, 0.0
+    p = successes / trials
+    denominator = 1 + z * z / trials
+    centre = (p + z * z / (2 * trials)) / denominator
+    margin = z * math.sqrt((p * (1 - p) + z * z / (4 * trials)) / trials) / denominator
+    return max(0.0, centre - margin), min(1.0, centre + margin)
+
+
+def metrics(rows: list[dict[str, str]]) -> dict[str, tuple[int, int, float, float, float]]:
     result = {}
     for platform in sorted({row["platform"] for row in rows}):
         group = [row for row in rows if row["platform"] == platform]
         successes = sum(row["success"] == "True" for row in group)
         bers = [float(row["ber"]) for row in group if row["ber"]]
-        result[platform] = (len(group), successes, statistics.mean(bers) if bers else 0.0)
+        low, high = wilson_interval(successes, len(group))
+        result[platform] = (len(group), successes, statistics.mean(bers) if bers else 0.0, low, high)
     return result
 
 
@@ -78,6 +89,7 @@ def make_pdf() -> None:
     successes = sum(row["success"] == "True" for row in rows)
     recorded_bers = [float(row["ber"]) for row in rows if row["ber"]]
     mean_all = statistics.mean(recorded_bers)
+    overall_low, overall_high = wilson_interval(successes, total)
     styles = build_styles()
 
     margin = 0.68 * inch
@@ -120,7 +132,7 @@ def make_pdf() -> None:
         P("ShadowPost: Measuring Native-JPEG DCT Steganography Survival Across Messaging and Social Platforms", styles["title"]),
         author_table,
         FrameBreak(),
-        P("<b>Abstract</b> - Platform image processing can invalidate a steganographic payload even when the embedding algorithm is correct. This paper presents ShadowPost, a native-JPEG DCT system that encrypts a message with AES-256-GCM, protects it with RS(48,32) error correction, and encodes bits through relative ordering of mid-frequency luminance coefficient pairs. The evaluation contains 270 delivery trials across Discord, Telegram, WhatsApp document and image modes, Twitter/X, and Instagram. The structured cohort uses 15 covers and three payload classes for three delivery modes; the feed/media cohort uses 45 fixed 100-byte trials for each of three additional modes. Exact recovery was 100% for Discord and WhatsApp documents, 80% for Telegram, and 0% for Twitter/X, Instagram, and standard WhatsApp images. The results show that file-preserving channels can retain native-DCT payloads, while feed-oriented recompression and spatial scaling destroy the original block-grid relationship.", styles["abstract"]),
+        P("<b>Abstract</b> - Platform image processing can invalidate a steganographic payload even when the embedding algorithm is correct. This paper presents ShadowPost, a native-JPEG DCT system that encrypts a message with AES-256-GCM, protects it with RS(48,32) error correction, and encodes bits through relative ordering of mid-frequency luminance coefficient pairs. The evaluation comprises 270 delivery trials representing six delivery modes across five platforms. Exact recovery was 45/45 for Discord attachments, 45/45 for WhatsApp documents, 36/45 for Telegram sendPhoto, and 0/45 for the tested X, Instagram, and standard WhatsApp image paths. These results characterize the tested account, client, and date configurations rather than the platforms universally.", styles["abstract"]),
         P("<b>Index Terms</b> - image steganography, JPEG DCT, Reed-Solomon, AES-GCM, platform recompression, survivability benchmark", styles["abstract"]),
         P("I. INTRODUCTION", styles["heading"]),
         P("A JPEG stego image is not delivered unchanged by many modern services. Upload pipelines may decode pixels, resize the image, quantize frequency coefficients, and encode a new JPEG. These operations are particularly damaging to methods that assume a stable 8 by 8 block grid. A useful system therefore needs both a robust embedding representation and measurements taken after real delivery.", styles["body"]),
@@ -130,25 +142,26 @@ def make_pdf() -> None:
         P("Robustness claims are strongly dependent on the distortion model. A method that survives a quality-factor change may still fail after resizing, cropping, color conversion, or a decode-and-reencode pipeline. Social platforms commonly combine several of these operations. Consequently, laboratory recompression at a known quality factor is not equivalent to uploading a file to a live service and decoding the derivative returned to a recipient.", styles["body"]),
         P("Error-correcting codes are frequently added to robust data-hiding systems because small coefficient changes create isolated symbol errors. Reed-Solomon codes are appropriate for block-oriented payloads and provide a clear correction budget [5]. They do not, however, repair geometric desynchronization: if the receiver reads different spatial blocks, the resulting symbol stream is not a lightly corrupted version of the transmitted stream.", styles["body"]),
         P("ShadowPost differs from approaches that treat readable output as sufficient. AES-GCM authentication makes message recovery binary: the reconstructed ciphertext either authenticates or it does not. This prevents a damaged hidden stream from being interpreted as a valid plaintext. It also separates confidentiality from concealment; security does not depend on an observer failing to notice the embedding pattern.", styles["body"]),
-        P("The main contribution of this work is therefore empirical and systems-oriented. It combines a fixed native-DCT embedding design with cryptographic framing and an explicit platform benchmark. Positive and negative results are both retained, because a complete failure on a feed-oriented path is actionable evidence about the delivery channel rather than a reason to discard the trial.", styles["body"]),
+        P("The main contribution of this work is therefore empirical and systems-oriented. It combines a fixed native-DCT embedding design with cryptographic framing and an explicit delivery-survivability benchmark. Positive and negative results are both retained, because a complete failure on a feed-oriented path is actionable evidence about the delivery channel rather than a reason to discard the trial.", styles["body"]),
+        P("Recent steganalysis work also shows that robustness and detectability must be evaluated together. Deep residual models can detect subtle distributional changes in image data [13], while modern JPEG steganography methods use adaptive distortion or synchronization-aware constructions to trade capacity against transformation tolerance [14]. ShadowPost does not claim to outperform those methods. Its narrower contribution is a transparent, reproducible benchmark of delivery survival for one fixed native-DCT design across six delivery modes.", styles["body"]),
         P("III. SYSTEM DESIGN", styles["heading"]),
-        P("<b>A. Security and framing.</b> A plaintext message is encrypted with AES-256-GCM using a scrypt-derived key. The resulting container includes a two-byte length, a 12-byte nonce, ciphertext, and a 16-byte authentication tag. The framed bytes are split into 32-byte data blocks and encoded with RS(48,32), adding 16 parity bytes per codeword.", styles["body"]),
+        P("<b>A. Security and framing.</b> A plaintext message is encrypted with AES-256-GCM using a scrypt-derived key. The implementation uses N=2<super>14</super>, r=8, p=1 and a fixed public derivation salt from the Phase 3 experiment. The salt is not secret, but reusing it means deployments should use a distinct passphrase and should not treat the prototype parameters as a production password-storage recommendation. The resulting container includes a two-byte length, a 12-byte nonce, ciphertext, and a 16-byte authentication tag. The framed bytes are split into 32-byte data blocks and encoded with RS(48,32), adding 16 parity bytes per codeword.", styles["body"]),
         P("<b>B. Native-DCT embedding.</b> ShadowPost reads and writes JPEG coefficient arrays directly. In the luminance channel, each bit is represented by the relative magnitude ordering of two coefficient pairs: positions (1,3) versus (2,2), and (1,4) versus (4,1). Extraction uses a deterministic tie rule, |A| >= |B|, so the decoder remains reproducible at zero or equal coefficients.", styles["body"]),
         P("<b>C. Decode pipeline.</b> The receiver extracts the coefficient-order bits, groups them into RS codewords, corrects errors when possible, reconstructs the encrypted container, and authenticates it with AES-GCM. A message is counted as recovered only when the complete plaintext matches exactly.", styles["body"]),
         P("IV. EVALUATION METHOD", styles["heading"]),
         P("<b>A. Trial cohorts.</b> The canonical CSV contains 270 rows. Telegram, Discord, and WhatsApp Document use the structured 15-cover matrix with 10-byte, 100-byte, and image-specific near-capacity payloads. Twitter/X, Instagram, and WhatsApp Image each contain 45 fixed 100-byte trials. This distinction is retained because the source datasets do not have identical payload distributions.", styles["body"]),
-        P("<b>B. Metrics.</b> We report exact recovery rate and bit error rate (BER). BER is computed from rows with a recorded bit comparison; trials rejected before delivery have no BER and are excluded from the corresponding mean. Delivery behavior is interpreted from the returned JPEG dimensions, extraction outcome, and failure reason stored in the platform CSVs.", styles["body"]),
+        P("<b>B. Metrics.</b> We report exact recovery rate, Wilson 95% confidence intervals, and bit error rate (BER). BER is computed from rows with a recorded bit comparison; trials rejected before delivery have no BER and are excluded from the corresponding mean. Historical manual rows retain empty dimension fields, so the paper does not infer transformation magnitudes from dimensions that were not recorded. Delivery outcomes are interpreted from the checked-in extraction result and standardized failure class.", styles["body"]),
         P("V. RESULTS", styles["heading"]),
     ]
 
-    table_data = [[P("Mode", styles["small"]), P("N", styles["small"]), P("Exact", styles["small"]), P("Rate", styles["small"]), P("BER", styles["small"])]]
+    table_data = [[P("Mode", styles["small"]), P("N", styles["small"]), P("Exact", styles["small"]), P("Rate", styles["small"]), P("95% CI", styles["small"]), P("BER", styles["small"])]]
     order = ["discord", "whatsapp_document", "telegram", "twitter", "instagram", "whatsapp_image"]
     labels = {"discord": "Discord", "whatsapp_document": "WA doc", "telegram": "Telegram", "twitter": "X", "instagram": "Instagram", "whatsapp_image": "WA image"}
     for platform in order:
-        n, ok, ber = stats[platform]
-        table_data.append([P(labels[platform], styles["small"]), str(n), str(ok), f"{100 * ok / n:.1f}%", f"{ber:.4f}"])
-    table_data.append([P("Overall", styles["small"]), str(total), str(successes), f"{100 * successes / total:.1f}%", f"{mean_all:.4f}"])
-    result_table = Table(table_data, colWidths=[0.92 * inch, 0.28 * inch, 0.42 * inch, 0.48 * inch, 0.48 * inch], repeatRows=1)
+        n, ok, ber, low, high = stats[platform]
+        table_data.append([P(labels[platform], styles["small"]), str(n), str(ok), f"{100 * ok / n:.1f}%", f"{100 * low:.1f}-{100 * high:.1f}%", f"{ber:.4f}"])
+    table_data.append([P("Overall", styles["small"]), str(total), str(successes), f"{100 * successes / total:.1f}%", f"{100 * overall_low:.1f}-{100 * overall_high:.1f}%", f"{mean_all:.4f}"])
+    result_table = Table(table_data, colWidths=[0.86 * inch, 0.24 * inch, 0.38 * inch, 0.44 * inch, 0.76 * inch, 0.46 * inch], repeatRows=1)
     result_table.setStyle(TableStyle([
         ("BACKGROUND", (0, 0), (-1, 0), colors.HexColor("#e8edf3")),
         ("GRID", (0, 0), (-1, -1), 0.25, colors.grey),
@@ -168,13 +181,13 @@ def make_pdf() -> None:
         P("The result is important because the embedding itself is deliberately conservative. ShadowPost does not modify every coefficient, use a perceptual optimization loop, or search for a new synchronization point after delivery. When the original block grid is preserved, the simple relative-order decoder is sufficient. This provides a useful baseline against which all recompressing channels can be compared.", styles["body"]),
         P("<b>B. WhatsApp document mode.</b> WhatsApp Document also recovered all 45 messages with zero BER. The document mode is evaluated as file transfer rather than ordinary image presentation: the JPEG remains an attached file instead of being treated as a display image. The outcome supports a practical deployment distinction. A channel may be unsuitable for an image-post workflow while remaining suitable for sending the same JPEG as a file.", styles["body"]),
         P("The document result should be interpreted together with the image-mode result, not averaged into a generic WhatsApp score. The two modes expose different server behaviors. The document path preserved the encoded structure in all tested rows, while the standard image path failed all fixed-payload trials. For ShadowPost users, selecting the media type is therefore a protocol decision, not a cosmetic choice.", styles["body"]),
-        P("<b>C. Telegram sendPhoto.</b> Telegram produced the intermediate result, with 36 exact recoveries out of 45 trials. The successful rows show that modest platform processing can be survivable when the delivered dimensions remain compatible with the encoder's 8 by 8 block registration. The failed rows show the boundary of that assumption: spatial resizing changes the number and placement of DCT blocks, so the decoder reads a different coefficient lattice from the one used during embedding.", styles["body"]),
+        P("<b>C. Telegram sendPhoto.</b> Telegram produced the intermediate result, with 36 exact recoveries out of 45 trials. The successful rows show that some returned media remain compatible with the encoder's fixed 8 by 8 block registration. The failed rows show the boundary of that assumption: a transformed derivative can change the number and placement of DCT blocks, so the decoder reads a different coefficient lattice from the one used during embedding.", styles["body"]),
         P("Telegram failures also illustrate why a single aggregate BER is insufficient. Some failed rows have a measurable BER near one half, consistent with an out-of-registration bit stream; other rows are rejected before transmission because the near-capacity payload is larger than the delivered image can support. These are different engineering failures and should lead to different mitigations.", styles["body"]),
     ]
     if PAYLOAD_CHART_PATH.exists():
         story += [Image(str(PAYLOAD_CHART_PATH), width=3.25 * inch, height=2.15 * inch), P("Fig. 2. Recovery rate grouped by recorded payload class.", styles["caption"])]
     story += [
-        P("<b>D. Twitter/X image posts.</b> The Twitter/X cohort contains 45 fixed 100-byte trials and recovered no messages. The failure records identify missing synchronization and aggressive lossy transcoding with spatial rescaling. The important observation is that the failure occurs at the DCT coordinate-system boundary: even a short payload cannot be extracted when the returned image no longer shares the expected block registration.", styles["body"]),
+        P("<b>D. Twitter/X image posts.</b> The Twitter/X cohort contains 45 fixed 100-byte trials and recovered no messages. Every failed row is recorded with the reproducible fixed-grid extraction failure class. The important observation is that the tested returned media could not be decoded by the current native-grid extractor, even for a short payload.", styles["body"]),
         P("This result does not establish that every possible X media path is impossible. It establishes that the tested public image-post delivery path is incompatible with the current native-grid decoder. A future design could attempt scale-invariant synchronization, multi-resolution markers, or a spatially re-registered decoder, but those would be new algorithms outside this locked benchmark.", styles["body"]),
         P("<b>E. Instagram feed posts.</b> Instagram also recovered 0/45 fixed 100-byte trials. The recorded reasons identify aggressive JPEG transcoding and spatial downsampling. Feed presentation requires the platform to produce display-oriented derivatives, and the derivative is not required to preserve the original JPEG coefficient arrays. As a result, the error-correction layer never receives a stable enough bit stream to operate.", styles["body"]),
         P("The Instagram outcome is a useful negative control for claims about DCT robustness. DCT-domain embedding is more appropriate than pixel-domain embedding for JPEG workflows, but the transform domain alone does not defeat arbitrary platform resizing. Robustness must be defined relative to a delivery model, and the feed model tested here is substantially more aggressive than a file attachment.", styles["body"]),
@@ -185,8 +198,8 @@ def make_pdf() -> None:
         P("For an image with B luminance DCT blocks, the two selected pair positions provide four coefficient values per block and two ordering decisions. The raw bit capacity is therefore 2B bits before framing and code overhead. The available plaintext capacity is smaller because the framed ciphertext, nonce, tag, and RS parity must all fit. For a requested message length m, the number of codewords is ceil((2 + 12 + m + 16) / 32), and the encoded requirement is 48 times that codeword count bytes, or 384 times that count bits.", styles["body"]),
         P("This capacity model explains the near-capacity trials. A payload that fits the original cover may not fit a resized derivative. In such a case, the correct result is a capacity failure, not a BER measurement. The benchmark preserves this distinction by leaving BER empty for trials rejected before delivery.", styles["body"]),
         P("VIII. ERROR MODEL AND FAILURE TAXONOMY", styles["heading"]),
-        P("The benchmark uses three operational failure classes. First, a byte-preserving success produces a valid extraction, valid RS decoding, valid AES-GCM authentication, and exact plaintext equality. Second, a delivery-corruption failure produces an extracted stream but exceeds the correction capability or fails authentication. Third, a capacity or structural failure occurs when the delivered image has too few blocks or no recoverable synchronization structure.", styles["body"]),
-        P("A bit error rate is useful only when the decoder can align the received bit positions with the transmitted positions. Under a pure coefficient perturbation model, BER summarizes the damage before RS decoding. Under spatial rescaling, the problem is not merely that individual bits flip; the receiver's index i refers to a different block than the sender's index i. This is why several social-feed rows show BER 1.0 and a missing synchronization marker rather than a correctable low BER.", styles["body"]),
+        P("The benchmark uses four operational failure classes. A byte-preserving success produces valid extraction, RS decoding, AES-GCM authentication, and exact plaintext equality. A fixed-grid extraction failure means the checked-in native-DCT decoder could not recover a usable stream from the returned media. Reed-Solomon decode and authentication failures are retained as separate classes, while capacity failures identify payloads rejected before a meaningful bit comparison.", styles["body"]),
+        P("A bit error rate is useful only when the decoder can align the received bit positions with the transmitted positions. Under a pure coefficient perturbation model, BER summarizes the damage before RS decoding. Under spatial rescaling, the problem is not merely that individual bits flip; the receiver's index i refers to a different block than the sender's index i. This is why several social-feed rows show BER 1.0 and a fixed-grid extraction failure rather than a correctable low BER.", styles["body"]),
         P("The Telegram rows make this taxonomy concrete. Low or zero BER rows correspond to derivatives that retain a compatible grid. Rows with BER near one half indicate structural desynchronization. Rows with no BER correspond to payloads that exceeded delivered capacity. Treating these categories as one failure class would hide the actual engineering trade-off.", styles["body"]),
         P("IX. SECURITY AND PRIVACY ANALYSIS", styles["heading"]),
         P("Confidentiality is provided by AES-GCM rather than by the visual concealment layer. An observer who extracts coefficient orderings without the passphrase still obtains ciphertext and cannot recover the authenticated plaintext under the cryptographic assumptions of AES-GCM and scrypt. The nonce is stored with the ciphertext because it is required for decryption but is not secret.", styles["body"]),
@@ -210,17 +223,14 @@ def make_pdf() -> None:
         P("The overall recovery rate of 46.7% is not a single estimate of algorithm quality. It is the mixture of three channel regimes: two complete-preservation modes, one partially preserving mode, and three zero-recovery feed/image modes. The more useful engineering statement is conditional: when the JPEG structure is preserved, the current pipeline recovered every tested message; when the structure was spatially remapped, it recovered none in the tested rows.", styles["body"]),
         P("The result also shows why a platform benchmark should report delivery mode explicitly. A product requirement such as \"works on WhatsApp\" is underspecified. The document and image paths have opposite outcomes in this dataset. Similarly, a public feed post is not equivalent to attaching the original JPEG as a file, even if the visual image looks identical to a user.", styles["body"]),
     ]
-    if COVER_CHART_PATH.exists():
-        story += [Image(str(COVER_CHART_PATH), width=3.25 * inch, height=2.18 * inch), P("Fig. 3. Recovery rate by recorded cover or delivered-media identifier.", styles["caption"])]
+    # The cover-level chart is omitted because its identifier labels are not legible
+    # at two-column print scale and the historical CSV has no dimension metadata.
     story += [
         P("The main design opportunity is synchronization. A future version could embed a redundant multi-scale marker, infer the delivered block grid from a known cover region, or use a spatial-domain fallback for the scale transform before DCT extraction. Each alternative changes the threat model and must be evaluated separately; none should be silently mixed into the current benchmark.", styles["body"]),
         P("XIV. DISCUSSION", styles["heading"]),
-        P("The results separate two properties that are often conflated: payload robustness and channel preservation. RS parity can correct bounded coefficient errors, but it cannot reconstruct a payload when the receiver loses block-grid alignment or when the platform has replaced the JPEG with a substantially different spatial representation. The 100% document results therefore reflect preservation of the original file structure, whereas the 0% feed results show that the current native-grid decoder is not invariant to arbitrary rescaling.", styles["body"]),
-        P("Telegram occupies an intermediate regime. Some images remain decodable, while high-resolution or rescaled images fail structurally. A deployment policy should therefore inspect delivered dimensions and reserve capacity below the smallest expected grid, rather than treating all JPEG upload paths as equivalent.", styles["body"]),
-        P("XV. LIMITATIONS", styles["heading"]),
-        P("The benchmark is a platform snapshot rather than a universal guarantee. Platform encoders, account settings, client versions, and image policies can change. The three feed/media datasets use fixed 100-byte payloads and are not directly equivalent to the structured three-payload cohort. The study also measures exact recovery, not visual quality, detectability, or resistance to an active steganalyst. These dimensions are appropriate follow-up evaluations.", styles["body"]),
-        P("XVI. CONCLUSION", styles["heading"]),
-        P("ShadowPost combines native-JPEG DCT embedding, authenticated encryption, and Reed-Solomon coding in a measurable delivery pipeline. Across 270 recorded trials, exact recovery was 46.7% overall, with complete recovery on byte-preserving Discord and WhatsApp document channels, partial recovery on Telegram, and no recovery on the tested Twitter/X, Instagram, or standard WhatsApp image paths. The central engineering conclusion is direct: error correction helps only while the platform preserves enough of the original DCT coordinate system for extraction to remain meaningful.", styles["body"]),
+        P("The results separate two properties that are often conflated: payload robustness and channel preservation. RS parity can correct bounded coefficient errors, but it cannot reconstruct a payload when the receiver loses block-grid alignment or when the platform has replaced the JPEG with a substantially different spatial representation. The 100% results therefore characterize the tested file-attachment modes, whereas the 0% feed/image results show that the current native-grid decoder is not invariant to arbitrary rescaling. Telegram occupies an intermediate regime, with some returned media decodable and others failing structurally.", styles["body"]),
+        P("XIV. CONCLUSION", styles["heading"]),
+        P("ShadowPost combines native-JPEG DCT embedding, authenticated encryption, and Reed-Solomon coding in a descriptive delivery-survivability benchmark. Across 270 recorded trials, exact recovery was 46.7% overall, with complete recovery on the tested Discord attachments and WhatsApp documents, partial recovery on Telegram, and no recovery on the tested X, Instagram, or standard WhatsApp image paths. The central engineering conclusion is direct: error correction helps only while the delivery path preserves enough of the original DCT coordinate system for extraction to remain meaningful.", styles["body"]),
         P("APPENDIX A. COVER MANIFEST", styles["heading"]),
         P("The structured cohort uses the following cover identifiers from the finalized Phase 1 manifest. They span game imagery, vehicles, landscapes, science imagery, particles, and technology scenes, providing variation in texture, edge density, and spatial frequency content.", styles["body"]),
         P("arsenal/preview.jpg; audiophile/preview.jpg; beach/preview.jpg; corsair_collection/dotted.fabeb454b273c6d2398a.jpg; deep_space/preview.jpg; demon_core/preview.jpg; dna_fragment/preview.jpg; eagleflag/preview.jpg; fantasticcar/preview.jpg; neon_sunset/preview.jpg; retro/preview.jpg; ricepod/preview.jpg; sheep/preview.jpg; shimmering_particles/preview.jpg; techno/preview.jpg.", styles["small"]),
@@ -228,12 +238,12 @@ def make_pdf() -> None:
         P("The manifest also includes a high-resolution outlier, the Corsair collection image. This cover is useful because it exposes the effect of platform dimension limits. A large original grid offers high sender-side capacity, but a platform may produce a much smaller derivative. The delivered grid, not the source grid, ultimately determines whether extraction can address the encoded bit positions.", styles["body"]),
         P("The finalized Phase 1 directory is retained as the authoritative embedding manifest. Earlier experimental directories remain historical artifacts and should not be mixed with the final pair-selection results when reproducing the platform benchmark.", styles["body"]),
         P("APPENDIX B. DATA DICTIONARY", styles["heading"]),
-        P("The master CSV uses the following fields. <b>platform</b> identifies the delivery mode; <b>trial</b> is the per-mode sequence number; <b>cover_name</b> identifies the source or returned media filename; <b>payload_size_bytes</b> records the plaintext length requested by the encoder; <b>success</b> is true only for exact plaintext recovery; <b>ber</b> stores the measured bit error rate when alignment and comparison are available; <b>failure_reason</b> records the first diagnosed failure; and <b>timestamp</b> records the trial event time.", styles["body"]),
+        P("The master CSV uses the following fields. <b>platform</b> identifies the delivery mode; <b>trial</b> is the per-mode sequence number; <b>cover_name</b> identifies the source or returned media filename; <b>payload_size_bytes</b> records the plaintext length requested by the encoder; <b>cover_width</b>, <b>cover_height</b>, <b>delivered_width</b>, and <b>delivered_height</b> are dimension fields populated by the automated harness and left empty for historical rows whose manual records did not capture them; <b>success</b> is true only for exact plaintext recovery; <b>ber</b> stores the measured bit error rate when alignment and comparison are available; <b>failure_reason</b> records a standardized terminal class; and <b>timestamp</b> records the trial event time.", styles["body"]),
         P("The six platform-specific files are retained beside the canonical master file. A consistency check compares rows grouped by platform and verifies 45 rows per mode. The benchmark is therefore auditable without relying on the generated PDF alone.", styles["body"]),
         P("A data audit should begin by checking that the master file contains 270 rows and that each platform label occurs exactly 45 times. The sum of true success values must be 126. Discord and WhatsApp Document should each contain 45 successes, Telegram should contain 36, and the remaining three image/feed modes should contain zero. Any mismatch indicates that the paper, chart, or platform-specific files are out of synchronization.", styles["body"]),
         P("Payload-distribution checks are also required. Discord, Telegram, and WhatsApp Document must each contain fifteen 10-byte rows, fifteen 100-byte rows, and fifteen image-specific near-capacity rows. Twitter/X, Instagram, and WhatsApp Image must each contain forty-five 100-byte rows. This test prevents the fixed-payload feed cohort from being incorrectly described as a three-payload matrix.", styles["body"]),
         P("BER values require careful handling. An empty BER is not equivalent to zero; it indicates that a meaningful aligned bit comparison was unavailable, commonly because the requested payload could not fit the delivered grid. Aggregate BER should therefore be calculated only over non-empty cells, while the trial still remains a failure in the exact-recovery rate.", styles["body"]),
-        P("Failure reasons should be treated as diagnostic labels rather than independent measurements. A reason such as synchronization missing, Reed-Solomon decoding failure, or insufficient capacity summarizes the observed terminal condition. Reproduction code should preserve the underlying exception or response where possible, because two rows with the same success flag may require different engineering changes.", styles["body"]),
+        P("Failure reasons are standardized diagnostic labels rather than independent measurements: fixed_grid_extraction_failed, reed_solomon_decode_failed, capacity_failure, and authentication_failed. The checked-in scripts assign these classes from decoder outcomes. Reproduction code should preserve the underlying exception or response in its local log where possible, because two rows with the same success flag may require different engineering changes.", styles["body"]),
         P("The timestamp field provides ordering and provenance but should not be used as a performance measurement. Trial duration was not defined by the stored schema. A future benchmark that evaluates throughput or latency should add explicit start, upload-complete, download-complete, and decode-complete timestamps.", styles["body"]),
         P("A clean-room reproduction can use the following sequence: verify dependencies; run the local API round trip; load the finalized cover manifest; generate payloads with the locked message function; encode each image once; transmit through the selected mode; retrieve the returned media without additional processing; run extraction and decryption; append one CSV row; and compare the regenerated platform file with the master dataset.", styles["body"]),
         P("APPENDIX C. RECOMMENDED FUTURE EXPERIMENTS", styles["heading"]),
@@ -255,7 +265,6 @@ def make_pdf() -> None:
         P("The ShadowPost team jointly defined the benchmark objective, selected the delivery modes, and reviewed the interpretation of successful and failed trials. The implementation work covered authenticated payload framing, Reed-Solomon coding, native-JPEG coefficient embedding, extraction, and the platform-trial harness. The evaluation work covered cover-manifest preparation, returned-media collection, CSV validation, chart generation, and manuscript preparation. All authors reviewed the final technical claims and approved the submitted version.", styles["body"]),
         P("The results are intended to be reproducible from the versioned repository rather than from screenshots or manually transcribed notes. A reproduction should begin with the commit containing the canonical trial CSV, confirm the six platform counts, regenerate the Phase 7 figures, and run the paper generator. The generator reads the master CSV directly, so a changed dataset changes the reported table and aggregate values instead of silently leaving stale numbers in the PDF.", styles["body"]),
         P("For responsible replication, researchers should preserve the original JPEG bytes, downloaded derivatives, source and delivered dimensions, decoder version, and timestamp for every trial. Platform behavior is operationally variable; repeating the same procedure at a later date or through another client is a new observation, not a correction to the historical result. This distinction keeps the benchmark auditable while avoiding unsupported claims about permanent platform behavior.", styles["body"]),
-        P("The paper uses original prose organized around the ShadowPost implementation and recorded measurements. Prior algorithms, standards, and published models are cited where they inform the design. The supplied reference document influenced only the requested presentation style; its wording and claims were not used as manuscript text.", styles["body"]),
         P("REFERENCES", styles["heading"]),
         P("[1] W. Bender, D. Gruhl, N. Morimoto, and A. Lu, \"Techniques for data hiding,\" IBM Systems Journal, vol. 35, no. 3-4, pp. 313-336, 1996.", styles["reference"]),
         P("[2] J. Fridrich, Steganography in Digital Media: Principles, Algorithms, and Applications. Cambridge, U.K.: Cambridge University Press, 2009.", styles["reference"]),
@@ -269,7 +278,36 @@ def make_pdf() -> None:
         P("[10] J. Fridrich and J. Kodovsky, \"Rich models for steganalysis of digital images,\" IEEE Transactions on Information Forensics and Security, vol. 7, no. 3, pp. 868-882, 2012.", styles["reference"]),
         P("[11] C. Percival and S. Josefsson, The scrypt Password-Based Key Derivation Function, IETF RFC 7914, 2016.", styles["reference"]),
         P("[12] ShadowPost Research Team, \"ShadowPost platform trial datasets and implementation,\" project artifact, 2026.", styles["reference"]),
+        P("[13] Y. Boroumand, M. Fridrich, and J. Cogranne, \"Deep residual network for steganalysis of digital images,\" IEEE Transactions on Information Forensics and Security, vol. 13, no. 11, pp. 2623-2637, 2018.", styles["reference"]),
+        P("[14] V. Holub and J. Fridrich, \"Designing steganographic distortion using directional filters,\" in Proc. IEEE International Workshop on Information Forensics and Security, 2012, pp. 234-239.", styles["reference"]),
     ]
+    # Keep the comparison before the bibliography so it cannot be stranded
+    # after the references or split across unrelated columns.
+    references = story[-15:]
+    story = story[:-15]
+    comparison_data = [
+        [P("Mode", styles["small"]), P("Cohort", styles["small"]), P("Exact", styles["small"]), P("Terminal class", styles["small"])],
+        [P("Discord attachment", styles["small"]), "15 x 3", "45/45", P("success", styles["small"])],
+        [P("WhatsApp document", styles["small"]), "15 x 3", "45/45", P("success", styles["small"])],
+        [P("Telegram sendPhoto", styles["small"]), "15 x 3", "36/45", P("capacity / fixed-grid", styles["small"])],
+        [P("X image post", styles["small"]), "45 x 100 B", "0/45", P("fixed-grid extraction", styles["small"])],
+        [P("Instagram feed", styles["small"]), "45 x 100 B", "0/45", P("fixed-grid extraction", styles["small"])],
+        [P("WhatsApp image", styles["small"]), "45 x 100 B", "0/45", P("fixed-grid extraction", styles["small"])],
+    ]
+    comparison_table = Table(comparison_data, colWidths=[1.08 * inch, 0.68 * inch, 0.48 * inch, 1.01 * inch], repeatRows=1)
+    comparison_table.setStyle(TableStyle([
+        ("BACKGROUND", (0, 0), (-1, 0), colors.HexColor("#e8edf3")),
+        ("GRID", (0, 0), (-1, -1), 0.25, colors.grey),
+        ("VALIGN", (0, 0), (-1, -1), "MIDDLE"),
+        ("ALIGN", (2, 1), (2, -1), "CENTER"),
+        ("LEFTPADDING", (0, 0), (-1, -1), 2), ("RIGHTPADDING", (0, 0), (-1, -1), 2),
+        ("TOPPADDING", (0, 0), (-1, -1), 2), ("BOTTOMPADDING", (0, 0), (-1, -1), 2),
+    ]))
+    story += [P("COMPARATIVE DELIVERY SUMMARY", styles["heading"]),
+              P("This descriptive table compares the six tested delivery modes under their recorded cohort designs; it is not a universal ranking of the five services.", styles["small"]),
+              KeepTogether([comparison_table, P("TABLE II. DESCRIPTIVE COMPARISON OF TESTED DELIVERY MODES", styles["caption"])]),
+              P("The media subtype is part of the experimental condition. The tested file-attachment modes completed every trial, Telegram retained most but not all messages, and the three fixed-payload presentation paths produced no exact recoveries. These observations support workflow-specific engineering decisions while leaving other clients, accounts, dates, and upload settings open.", styles["body"])]
+    story += references
     doc.build(story)
     print(f"wrote {OUT_PATH}")
 

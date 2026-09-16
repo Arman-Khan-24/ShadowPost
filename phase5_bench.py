@@ -39,6 +39,17 @@ class StructuralFailure(RuntimeError):
     """A platform configuration or delivery failure, rather than BER damage."""
 
 
+def classify_failure(exc: Exception) -> str:
+    message = str(exc).lower()
+    if "capacity" in message or "too few blocks" in message:
+        return "capacity_failure"
+    if "reedsolomon" in message or "reed-solomon" in message:
+        return "reed_solomon_decode_failed"
+    if "authenticate" in message or "gcm" in message:
+        return "authentication_failed"
+    return "fixed_grid_extraction_failed"
+
+
 def required_codeword_bits(message: str) -> int:
     """Number of embedded RS bits required by one whole-message container."""
     chunks = math.ceil((2 + 12 + len(message.encode("utf-8")) + 16) / 32)
@@ -163,7 +174,7 @@ def run_trial(client: TestClient, platform: str, deliver, cover: Path, trial: in
             raise StructuralFailure("decoded plaintext did not match the test message")
         row["success"] = True
     except Exception as exc:
-        row["failure_reason"] = f"{type(exc).__name__}: {exc}"
+        row["failure_reason"] = classify_failure(exc)
     print(f"{platform} trial {trial} | {cover.name} | {payload_size} bytes | success={row['success']} | BER={row['ber']} {row['failure_reason']}")
     return row
 
@@ -189,7 +200,7 @@ def main() -> None:
                 rows.append({"platform": platform, "trial": trial, "cover_name": cover.name,
                              "payload_size_bytes": "", "cover_width": "", "cover_height": "",
                              "delivered_width": "", "delivered_height": "", "success": False, "ber": "",
-                             "failure_reason": str(exc), "timestamp": datetime.now(timezone.utc).isoformat()})
+                             "failure_reason": classify_failure(exc), "timestamp": datetime.now(timezone.utc).isoformat()})
                 continue
             for size in sizes:
                 trial += 1

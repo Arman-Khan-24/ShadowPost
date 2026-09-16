@@ -51,11 +51,9 @@ trials for Twitter/X, Instagram, and WhatsApp Image.
 | **Overall** | **All six modes** | **270** | **46.7%** | **126/270** | **0.51727204** |
 
 The BER column is the mean of recorded BER values; capacity-rejected trials have
-no BER value and are excluded from that mean. Byte-preserving delivery was
-observed for Discord attachments and WhatsApp documents. Telegram preserved some
-messages but downscaled selected images. Twitter/X, Instagram, and standard
-WhatsApp image delivery applied lossy transcoding and/or spatial scaling that
-destroyed the embedded DCT structure.
+no BER value and are excluded from that mean. The outcomes describe the tested
+delivery modes for the recorded account, client, and dates. The stored manual
+rows do not contain enough metadata to quantify a particular platform transform.
 
 ## Phase 7 Reporting
 
@@ -85,3 +83,10 @@ The script reads the Phase 5 dataset and writes charts and summaries to
 
 The app does not persist plaintext messages or passphrases. Bench output stores
 trial metadata, dimensions, BER, results, and timestamps.
+
+The canonical CSV contains source and delivered dimension columns for automated
+trials; historical manually recorded rows leave those fields empty. Failure
+labels use the reproducible classes `fixed_grid_extraction_failed`,
+`reed_solomon_decode_failed`, `capacity_failure`, and `authentication_failed`.
+The six delivery modes are a descriptive snapshot of the tested account, client,
+and date configurations, not a universal platform ranking.

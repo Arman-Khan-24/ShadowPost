@@ -26,13 +26,12 @@ are excluded from that calculation.
 
 ## Observed Delivery Behavior
 
-1. Discord attachments and WhatsApp documents preserved the original JPEG
-   structure and recovered all tested messages.
-2. Telegram recovered most payloads but downscaled selected images, causing DCT
-   block-grid registration failures for affected covers.
-3. Twitter/X, Instagram, and standard WhatsApp image delivery applied lossy
-   transcoding and spatial scaling. The resulting DCT structure did not preserve
-   the embedded coefficient relationships, so no exact messages were recovered.
+1. Discord attachments and WhatsApp documents recovered all tested messages.
+2. Telegram recovered most payloads; the remaining rows were recorded as either
+   capacity failures or fixed-grid extraction failures.
+3. Twitter/X, Instagram, and standard WhatsApp image delivery recovered no exact
+   messages. Their historical rows use the reproducible fixed-grid extraction
+   failure class; the manual records do not quantify a specific transform.
 
 ## Reproducibility Artifacts
 

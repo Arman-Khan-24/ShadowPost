@@ -29,10 +29,12 @@ three-payload matrix. Twitter/X, Instagram, and WhatsApp Image use 45 fixed
 | **Overall** | **All six modes** | **270** | **46.7%** | **126/270** | **0.51727204** |
 
 Mean BER values use recorded rows only; trials rejected before delivery have no
-BER value. Discord attachments and WhatsApp documents preserved the stego file
-structure. Telegram preserved some payloads but downscaled selected images.
-Twitter/X, Instagram, and standard WhatsApp image delivery changed the JPEG
-structure through lossy transcoding and spatial scaling.
+BER value. The canonical CSV includes source and delivered dimension columns;
+historical manually recorded rows leave those fields empty. Failure labels use
+the reproducible classes `fixed_grid_extraction_failed`,
+`reed_solomon_decode_failed`, `capacity_failure`, and `authentication_failed`.
+The six delivery modes are a descriptive snapshot, not a universal platform
+ranking.
 
 ## Reporting Artifacts
 

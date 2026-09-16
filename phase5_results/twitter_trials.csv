@@ -1,46 +1,46 @@
-platform,trial,cover_name,payload_size_bytes,success,ber,failure_reason,timestamp
-twitter,1,twitter/HRymGska4AAc_Xn.jpg,100,False,1.00000000,DCT-QIM sync header missing; aggressive lossy JPEG transcode and spatial rescaling,2026-09-15T06:15:22.145283+00:00
-twitter,2,twitter/HRymELHaYAAAiqj.jpg,100,False,1.00000000,DCT-QIM sync header missing; aggressive lossy JPEG transcode and spatial rescaling,2026-09-15T06:15:30.620813+00:00
-twitter,3,twitter/HRymB1FaAAENk0q.jpg,100,False,1.00000000,DCT-QIM sync header missing; aggressive lossy JPEG transcode and spatial rescaling,2026-09-15T06:15:37.391549+00:00
-twitter,4,twitter/HRyl-QxbEAAuHpQ.jpg,100,False,1.00000000,DCT-QIM sync header missing; aggressive lossy JPEG transcode and spatial rescaling,2026-09-15T06:15:59.637688+00:00
-twitter,5,twitter/HRyl6IqbEAE6jBj.jpg,100,False,1.00000000,DCT-QIM sync header missing; aggressive lossy JPEG transcode and spatial rescaling,2026-09-15T06:16:03.434307+00:00
-twitter,6,twitter/HRyl1qZbkAA7pcX.jpg,100,False,1.00000000,DCT-QIM sync header missing; aggressive lossy JPEG transcode and spatial rescaling,2026-09-15T06:16:07.635955+00:00
-twitter,7,twitter/HRylxBCb0AANl_F.jpg,100,False,1.00000000,DCT-QIM sync header missing; aggressive lossy JPEG transcode and spatial rescaling,2026-09-15T06:16:11.772070+00:00
-twitter,8,twitter/HRylunLa8AA611-.jpg,100,False,1.00000000,DCT-QIM sync header missing; aggressive lossy JPEG transcode and spatial rescaling,2026-09-15T06:16:16.890880+00:00
-twitter,9,twitter/HRylsAYasAEcpNc.jpg,100,False,1.00000000,DCT-QIM sync header missing; aggressive lossy JPEG transcode and spatial rescaling,2026-09-15T06:16:21.734315+00:00
-twitter,10,twitter/HRylisNaAAAyHoe.jpg,100,False,1.00000000,DCT-QIM sync header missing; aggressive lossy JPEG transcode and spatial rescaling,2026-09-15T06:16:27.343295+00:00
-twitter,11,twitter/HRylf3abQAAT9Jd.jpg,100,False,1.00000000,DCT-QIM sync header missing; aggressive lossy JPEG transcode and spatial rescaling,2026-09-15T06:16:34.264682+00:00
-twitter,12,twitter/HRylc2EbcAA9Q0z.jpg,100,False,1.00000000,DCT-QIM sync header missing; aggressive lossy JPEG transcode and spatial rescaling,2026-09-15T06:16:40.511653+00:00
-twitter,13,twitter/HRylY0kb0AAC52B.jpg,100,False,1.00000000,DCT-QIM sync header missing; aggressive lossy JPEG transcode and spatial rescaling,2026-09-15T06:16:54.211888+00:00
-twitter,14,twitter/HRylVybbkAAVHXB.jpg,100,False,1.00000000,DCT-QIM sync header missing; aggressive lossy JPEG transcode and spatial rescaling,2026-09-15T06:16:59.523190+00:00
-twitter,15,twitter/HRylTDib0AAm6KV.jpg,100,False,1.00000000,DCT-QIM sync header missing; aggressive lossy JPEG transcode and spatial rescaling,2026-09-15T06:17:04.668794+00:00
-twitter,16,twitter/HRylP1YbAAAE2jT.jpg,100,False,1.00000000,DCT-QIM sync header missing; aggressive lossy JPEG transcode and spatial rescaling,2026-09-15T06:17:10.681486+00:00
-twitter,17,twitter/HRylLOKaQAAkk03.jpg,100,False,1.00000000,DCT-QIM sync header missing; aggressive lossy JPEG transcode and spatial rescaling,2026-09-15T06:17:15.504185+00:00
-twitter,18,twitter/HRylGOwbkAAvy93.jpg,100,False,1.00000000,DCT-QIM sync header missing; aggressive lossy JPEG transcode and spatial rescaling,2026-09-15T06:17:20.378850+00:00
-twitter,19,twitter/HRylCdibcAA9W_J.jpg,100,False,1.00000000,DCT-QIM sync header missing; aggressive lossy JPEG transcode and spatial rescaling,2026-09-15T06:17:25.565461+00:00
-twitter,20,twitter/HRyk-LtagAAZCMA.jpg,100,False,1.00000000,DCT-QIM sync header missing; aggressive lossy JPEG transcode and spatial rescaling,2026-09-15T06:17:32.858123+00:00
-twitter,21,twitter/HRyk6A2aQAAzJQp.jpg,100,False,1.00000000,DCT-QIM sync header missing; aggressive lossy JPEG transcode and spatial rescaling,2026-09-15T06:17:40.110686+00:00
-twitter,22,twitter/HRyk2Q2boAAFFCO.jpg,100,False,1.00000000,DCT-QIM sync header missing; aggressive lossy JPEG transcode and spatial rescaling,2026-09-15T06:17:48.220780+00:00
-twitter,23,twitter/HRykxOyb0AEstCP.jpg,100,False,1.00000000,DCT-QIM sync header missing; aggressive lossy JPEG transcode and spatial rescaling,2026-09-15T06:17:53.470445+00:00
-twitter,24,twitter/HRykte4aoAAv5UR.jpg,100,False,1.00000000,DCT-QIM sync header missing; aggressive lossy JPEG transcode and spatial rescaling,2026-09-15T06:18:08.439525+00:00
-twitter,25,twitter/HRykn97bYAAVYB_.jpg,100,False,1.00000000,DCT-QIM sync header missing; aggressive lossy JPEG transcode and spatial rescaling,2026-09-15T06:18:14.747157+00:00
-twitter,26,twitter/HRykho2bMAAaVnf.jpg,100,False,1.00000000,DCT-QIM sync header missing; aggressive lossy JPEG transcode and spatial rescaling,2026-09-15T06:18:21.186649+00:00
-twitter,27,twitter/HRykdMwbsAADemL.jpg,100,False,1.00000000,DCT-QIM sync header missing; aggressive lossy JPEG transcode and spatial rescaling,2026-09-15T06:18:28.101111+00:00
-twitter,28,twitter/HRykXLlbsAER4vp.jpg,100,False,1.00000000,DCT-QIM sync header missing; aggressive lossy JPEG transcode and spatial rescaling,2026-09-15T06:18:35.163126+00:00
-twitter,29,twitter/HRykSWIbQAAnPl6.jpg,100,False,1.00000000,DCT-QIM sync header missing; aggressive lossy JPEG transcode and spatial rescaling,2026-09-15T06:18:41.444230+00:00
-twitter,30,twitter/HRykJseaYAAhC1k.jpg,100,False,1.00000000,DCT-QIM sync header missing; aggressive lossy JPEG transcode and spatial rescaling,2026-09-15T06:18:48.662488+00:00
-twitter,31,twitter/HRyj83wa8AAd4fH.jpg,100,False,1.00000000,DCT-QIM sync header missing; aggressive lossy JPEG transcode and spatial rescaling,2026-09-15T06:18:55.380775+00:00
-twitter,32,twitter/HRyj4C_awAAMb2z.jpg,100,False,1.00000000,DCT-QIM sync header missing; aggressive lossy JPEG transcode and spatial rescaling,2026-09-15T06:19:01.536619+00:00
-twitter,33,twitter/HRyjyJUbcAAFOYt.jpg,100,False,1.00000000,DCT-QIM sync header missing; aggressive lossy JPEG transcode and spatial rescaling,2026-09-15T06:19:07.161683+00:00
-twitter,34,twitter/HRyjrNgaYAEwU5A.jpg,100,False,1.00000000,DCT-QIM sync header missing; aggressive lossy JPEG transcode and spatial rescaling,2026-09-15T06:19:13.860978+00:00
-twitter,35,twitter/HRyjmjnbEAAqWZx.jpg,100,False,1.00000000,DCT-QIM sync header missing; aggressive lossy JPEG transcode and spatial rescaling,2026-09-15T06:19:18.041236+00:00
-twitter,36,twitter/HRyjiGaaoAARPrh.jpg,100,False,1.00000000,DCT-QIM sync header missing; aggressive lossy JPEG transcode and spatial rescaling,2026-09-15T06:19:22.244068+00:00
-twitter,37,twitter/HRyjbKyaEAAp0Gm.jpg,100,False,1.00000000,DCT-QIM sync header missing; aggressive lossy JPEG transcode and spatial rescaling,2026-09-15T06:19:26.749123+00:00
-twitter,38,twitter/HRyjWhRa0AAEWfi.jpg,100,False,1.00000000,DCT-QIM sync header missing; aggressive lossy JPEG transcode and spatial rescaling,2026-09-15T06:19:30.826966+00:00
-twitter,39,twitter/HRyjR5na0AAXdJM.jpg,100,False,1.00000000,DCT-QIM sync header missing; aggressive lossy JPEG transcode and spatial rescaling,2026-09-15T06:19:38.487389+00:00
-twitter,40,twitter/HRyjM21aIAAZlgF.jpg,100,False,1.00000000,DCT-QIM sync header missing; aggressive lossy JPEG transcode and spatial rescaling,2026-09-15T06:19:42.862130+00:00
-twitter,41,twitter/HRyjI2daoAAByvx.jpg,100,False,1.00000000,DCT-QIM sync header missing; aggressive lossy JPEG transcode and spatial rescaling,2026-09-15T06:19:48.526302+00:00
-twitter,42,twitter/HRyjFsMaQAA0s1F.jpg,100,False,1.00000000,DCT-QIM sync header missing; aggressive lossy JPEG transcode and spatial rescaling,2026-09-15T06:19:53.890664+00:00
-twitter,43,twitter/HRyjA3vb0AAGSF9.jpg,100,False,1.00000000,DCT-QIM sync header missing; aggressive lossy JPEG transcode and spatial rescaling,2026-09-15T06:20:01.471550+00:00
-twitter,44,twitter/HRyi83kaEAE3XxP.jpg,100,False,1.00000000,DCT-QIM sync header missing; aggressive lossy JPEG transcode and spatial rescaling,2026-09-15T06:20:05.606319+00:00
-twitter,45,twitter/HRyi4hZb0AEz4ME.jpg,100,False,1.00000000,DCT-QIM sync header missing; aggressive lossy JPEG transcode and spatial rescaling,2026-09-15T06:20:10.169265+00:00
+"platform","trial","cover_name","payload_size_bytes","cover_width","cover_height","delivered_width","delivered_height","success","ber","failure_reason","timestamp"
+"twitter","1","twitter/HRymGska4AAc_Xn.jpg","100","","","","","False","1.00000000","fixed_grid_extraction_failed","2026-09-15T06:15:22.145283+00:00"
+"twitter","2","twitter/HRymELHaYAAAiqj.jpg","100","","","","","False","1.00000000","fixed_grid_extraction_failed","2026-09-15T06:15:30.620813+00:00"
+"twitter","3","twitter/HRymB1FaAAENk0q.jpg","100","","","","","False","1.00000000","fixed_grid_extraction_failed","2026-09-15T06:15:37.391549+00:00"
+"twitter","4","twitter/HRyl-QxbEAAuHpQ.jpg","100","","","","","False","1.00000000","fixed_grid_extraction_failed","2026-09-15T06:15:59.637688+00:00"
+"twitter","5","twitter/HRyl6IqbEAE6jBj.jpg","100","","","","","False","1.00000000","fixed_grid_extraction_failed","2026-09-15T06:16:03.434307+00:00"
+"twitter","6","twitter/HRyl1qZbkAA7pcX.jpg","100","","","","","False","1.00000000","fixed_grid_extraction_failed","2026-09-15T06:16:07.635955+00:00"
+"twitter","7","twitter/HRylxBCb0AANl_F.jpg","100","","","","","False","1.00000000","fixed_grid_extraction_failed","2026-09-15T06:16:11.772070+00:00"
+"twitter","8","twitter/HRylunLa8AA611-.jpg","100","","","","","False","1.00000000","fixed_grid_extraction_failed","2026-09-15T06:16:16.890880+00:00"
+"twitter","9","twitter/HRylsAYasAEcpNc.jpg","100","","","","","False","1.00000000","fixed_grid_extraction_failed","2026-09-15T06:16:21.734315+00:00"
+"twitter","10","twitter/HRylisNaAAAyHoe.jpg","100","","","","","False","1.00000000","fixed_grid_extraction_failed","2026-09-15T06:16:27.343295+00:00"
+"twitter","11","twitter/HRylf3abQAAT9Jd.jpg","100","","","","","False","1.00000000","fixed_grid_extraction_failed","2026-09-15T06:16:34.264682+00:00"
+"twitter","12","twitter/HRylc2EbcAA9Q0z.jpg","100","","","","","False","1.00000000","fixed_grid_extraction_failed","2026-09-15T06:16:40.511653+00:00"
+"twitter","13","twitter/HRylY0kb0AAC52B.jpg","100","","","","","False","1.00000000","fixed_grid_extraction_failed","2026-09-15T06:16:54.211888+00:00"
+"twitter","14","twitter/HRylVybbkAAVHXB.jpg","100","","","","","False","1.00000000","fixed_grid_extraction_failed","2026-09-15T06:16:59.523190+00:00"
+"twitter","15","twitter/HRylTDib0AAm6KV.jpg","100","","","","","False","1.00000000","fixed_grid_extraction_failed","2026-09-15T06:17:04.668794+00:00"
+"twitter","16","twitter/HRylP1YbAAAE2jT.jpg","100","","","","","False","1.00000000","fixed_grid_extraction_failed","2026-09-15T06:17:10.681486+00:00"
+"twitter","17","twitter/HRylLOKaQAAkk03.jpg","100","","","","","False","1.00000000","fixed_grid_extraction_failed","2026-09-15T06:17:15.504185+00:00"
+"twitter","18","twitter/HRylGOwbkAAvy93.jpg","100","","","","","False","1.00000000","fixed_grid_extraction_failed","2026-09-15T06:17:20.378850+00:00"
+"twitter","19","twitter/HRylCdibcAA9W_J.jpg","100","","","","","False","1.00000000","fixed_grid_extraction_failed","2026-09-15T06:17:25.565461+00:00"
+"twitter","20","twitter/HRyk-LtagAAZCMA.jpg","100","","","","","False","1.00000000","fixed_grid_extraction_failed","2026-09-15T06:17:32.858123+00:00"
+"twitter","21","twitter/HRyk6A2aQAAzJQp.jpg","100","","","","","False","1.00000000","fixed_grid_extraction_failed","2026-09-15T06:17:40.110686+00:00"
+"twitter","22","twitter/HRyk2Q2boAAFFCO.jpg","100","","","","","False","1.00000000","fixed_grid_extraction_failed","2026-09-15T06:17:48.220780+00:00"
+"twitter","23","twitter/HRykxOyb0AEstCP.jpg","100","","","","","False","1.00000000","fixed_grid_extraction_failed","2026-09-15T06:17:53.470445+00:00"
+"twitter","24","twitter/HRykte4aoAAv5UR.jpg","100","","","","","False","1.00000000","fixed_grid_extraction_failed","2026-09-15T06:18:08.439525+00:00"
+"twitter","25","twitter/HRykn97bYAAVYB_.jpg","100","","","","","False","1.00000000","fixed_grid_extraction_failed","2026-09-15T06:18:14.747157+00:00"
+"twitter","26","twitter/HRykho2bMAAaVnf.jpg","100","","","","","False","1.00000000","fixed_grid_extraction_failed","2026-09-15T06:18:21.186649+00:00"
+"twitter","27","twitter/HRykdMwbsAADemL.jpg","100","","","","","False","1.00000000","fixed_grid_extraction_failed","2026-09-15T06:18:28.101111+00:00"
+"twitter","28","twitter/HRykXLlbsAER4vp.jpg","100","","","","","False","1.00000000","fixed_grid_extraction_failed","2026-09-15T06:18:35.163126+00:00"
+"twitter","29","twitter/HRykSWIbQAAnPl6.jpg","100","","","","","False","1.00000000","fixed_grid_extraction_failed","2026-09-15T06:18:41.444230+00:00"
+"twitter","30","twitter/HRykJseaYAAhC1k.jpg","100","","","","","False","1.00000000","fixed_grid_extraction_failed","2026-09-15T06:18:48.662488+00:00"
+"twitter","31","twitter/HRyj83wa8AAd4fH.jpg","100","","","","","False","1.00000000","fixed_grid_extraction_failed","2026-09-15T06:18:55.380775+00:00"
+"twitter","32","twitter/HRyj4C_awAAMb2z.jpg","100","","","","","False","1.00000000","fixed_grid_extraction_failed","2026-09-15T06:19:01.536619+00:00"
+"twitter","33","twitter/HRyjyJUbcAAFOYt.jpg","100","","","","","False","1.00000000","fixed_grid_extraction_failed","2026-09-15T06:19:07.161683+00:00"
+"twitter","34","twitter/HRyjrNgaYAEwU5A.jpg","100","","","","","False","1.00000000","fixed_grid_extraction_failed","2026-09-15T06:19:13.860978+00:00"
+"twitter","35","twitter/HRyjmjnbEAAqWZx.jpg","100","","","","","False","1.00000000","fixed_grid_extraction_failed","2026-09-15T06:19:18.041236+00:00"
+"twitter","36","twitter/HRyjiGaaoAARPrh.jpg","100","","","","","False","1.00000000","fixed_grid_extraction_failed","2026-09-15T06:19:22.244068+00:00"
+"twitter","37","twitter/HRyjbKyaEAAp0Gm.jpg","100","","","","","False","1.00000000","fixed_grid_extraction_failed","2026-09-15T06:19:26.749123+00:00"
+"twitter","38","twitter/HRyjWhRa0AAEWfi.jpg","100","","","","","False","1.00000000","fixed_grid_extraction_failed","2026-09-15T06:19:30.826966+00:00"
+"twitter","39","twitter/HRyjR5na0AAXdJM.jpg","100","","","","","False","1.00000000","fixed_grid_extraction_failed","2026-09-15T06:19:38.487389+00:00"
+"twitter","40","twitter/HRyjM21aIAAZlgF.jpg","100","","","","","False","1.00000000","fixed_grid_extraction_failed","2026-09-15T06:19:42.862130+00:00"
+"twitter","41","twitter/HRyjI2daoAAByvx.jpg","100","","","","","False","1.00000000","fixed_grid_extraction_failed","2026-09-15T06:19:48.526302+00:00"
+"twitter","42","twitter/HRyjFsMaQAA0s1F.jpg","100","","","","","False","1.00000000","fixed_grid_extraction_failed","2026-09-15T06:19:53.890664+00:00"
+"twitter","43","twitter/HRyjA3vb0AAGSF9.jpg","100","","","","","False","1.00000000","fixed_grid_extraction_failed","2026-09-15T06:20:01.471550+00:00"
+"twitter","44","twitter/HRyi83kaEAE3XxP.jpg","100","","","","","False","1.00000000","fixed_grid_extraction_failed","2026-09-15T06:20:05.606319+00:00"
+"twitter","45","twitter/HRyi4hZb0AEz4ME.jpg","100","","","","","False","1.00000000","fixed_grid_extraction_failed","2026-09-15T06:20:10.169265+00:00"
