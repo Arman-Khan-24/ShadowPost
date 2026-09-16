@@ -8,3 +8,8 @@ __pycache__/
 phase5_results/*.log
 phase5_results/*.pid
 paper_render/
+latex_render/
+paper_render_final/
+template_render/
+*.aux
+*.log
