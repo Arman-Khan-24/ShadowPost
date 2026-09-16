@@ -1,0 +1,32 @@
+Generated from phase5_results/platform_trials.csv
+
+discord: 45/45, Wilson 95% CI 92.1-100.0%
+  fixed_grid_extraction_failed: 0
+  reed_solomon_decode_failed: 0
+  capacity_failure: 0
+  authentication_failed: 0
+whatsapp_document: 45/45, Wilson 95% CI 92.1-100.0%
+  fixed_grid_extraction_failed: 0
+  reed_solomon_decode_failed: 0
+  capacity_failure: 0
+  authentication_failed: 0
+telegram: 36/45, Wilson 95% CI 66.2-89.1%
+  fixed_grid_extraction_failed: 0
+  reed_solomon_decode_failed: 2
+  capacity_failure: 7
+  authentication_failed: 0
+twitter: 0/45, Wilson 95% CI 0.0-7.9%
+  fixed_grid_extraction_failed: 45
+  reed_solomon_decode_failed: 0
+  capacity_failure: 0
+  authentication_failed: 0
+instagram: 0/45, Wilson 95% CI 0.0-7.9%
+  fixed_grid_extraction_failed: 45
+  reed_solomon_decode_failed: 0
+  capacity_failure: 0
+  authentication_failed: 0
+whatsapp_image: 0/45, Wilson 95% CI 0.0-7.9%
+  fixed_grid_extraction_failed: 45
+  reed_solomon_decode_failed: 0
+  capacity_failure: 0
+  authentication_failed: 0

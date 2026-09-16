@@ -16,26 +16,17 @@
 \newcommand{\paperheading}[1]{\Needspace{4\baselineskip}\vspace{1.1ex}\par\noindent\textbf{\MakeUppercase{#1}}\par\vspace{0.5ex}}
 \newcolumntype{Y}{>{\raggedright\arraybackslash}X}
 \newcommand{\pathcell}[1]{\begingroup\ttfamily\scriptsize\path{#1}\endgroup}
+\input{paper_figures/generated_results.tex}
 
 \title{ShadowPost: Measuring Native-JPEG DCT Steganography\\Survival Across Messaging and Social Platforms}
-\author{
-\IEEEauthorblockN{Arman Rizwan Khan}
-\IEEEauthorblockA{\textit{Dept. of Computer Science and Engineering}\\Priyadarshini College of Engineering\\Nagpur, Maharashtra, India\\arman.rkhan24@gmail.com}
-\and
-\IEEEauthorblockN{Aditya Shakya}
-\IEEEauthorblockA{\textit{Dept. of Computer Science and Engineering}\\Priyadarshini College of Engineering\\Nagpur, Maharashtra, India\\adityashakya2712@gmail.com}
-\and
-\IEEEauthorblockN{Divyani Dinkar Waikar}
-\IEEEauthorblockA{\textit{Dept. of Computer Science and Engineering}\\Priyadarshini College of Engineering\\Nagpur, Maharashtra, India\\divyaniwaikar2005@gmail.com}
-\and
-\IEEEauthorblockN{Aryan Manoj Terha}
-\IEEEauthorblockA{\textit{Dept. of Computer Science and Engineering}\\Priyadarshini College of Engineering\\Nagpur, Maharashtra, India\\aryanterha7@gmail.com}
-\and
-\IEEEauthorblockN{Shreya Kamlesh Prasad}
-\IEEEauthorblockA{\textit{Dept. of Computer Science and Engineering}\\Priyadarshini College of Engineering\\Nagpur, Maharashtra, India\\shreyaprasad5367@gmail.com}
-\and
-\IEEEauthorblockN{Rajshri Pote}
-\IEEEauthorblockA{\textit{Dept. of Computer Science and Engineering}\\Priyadarshini College of Engineering\\Nagpur, Maharashtra, India\\rajshri.pote@pcenagpur.edu.in}}
+\author{\begin{tabular}{ccc}
+\begin{minipage}[t]{0.31\textwidth}\centering\textbf{Arman Rizwan Khan}\\\textit{Dept. of Computer Science and Engineering}\\Priyadarshini College of Engineering\\Nagpur, Maharashtra, India\\arman.rkhan24@gmail.com\end{minipage} &
+\begin{minipage}[t]{0.31\textwidth}\centering\textbf{Aditya Shakya}\\\textit{Dept. of Computer Science and Engineering}\\Priyadarshini College of Engineering\\Nagpur, Maharashtra, India\\adityashakya2712@gmail.com\end{minipage} &
+\begin{minipage}[t]{0.31\textwidth}\centering\textbf{Divyani Dinkar Waikar}\\\textit{Dept. of Computer Science and Engineering}\\Priyadarshini College of Engineering\\Nagpur, Maharashtra, India\\divyaniwaikar2005@gmail.com\end{minipage}\\[1.2em]
+\begin{minipage}[t]{0.31\textwidth}\centering\textbf{Aryan Manoj Terha}\\\textit{Dept. of Computer Science and Engineering}\\Priyadarshini College of Engineering\\Nagpur, Maharashtra, India\\aryanterha7@gmail.com\end{minipage} &
+\begin{minipage}[t]{0.31\textwidth}\centering\textbf{Shreya Kamlesh Prasad}\\\textit{Dept. of Computer Science and Engineering}\\Priyadarshini College of Engineering\\Nagpur, Maharashtra, India\\shreyaprasad5367@gmail.com\end{minipage} &
+\begin{minipage}[t]{0.31\textwidth}\centering\textbf{Rajshri Pote}\\\textit{Dept. of Computer Science and Engineering}\\Priyadarshini College of Engineering\\Nagpur, Maharashtra, India\\rajshri.pote@pcenagpur.edu.in\end{minipage}
+\end{tabular}}
 
 \begin{document}
 \maketitle
@@ -92,26 +83,15 @@ We report exact recovery rate, Wilson 95\% confidence intervals, and bit error r
 \toprule
 Mode & N & Exact & Rate & 95\% CI & BER \\
 \midrule
-Discord & 45 & 45 & 100.0\% & 92.1--100.0\% & 0.0000 \\
-WA doc & 45 & 45 & 100.0\% & 92.1--100.0\% & 0.0000 \\
-Telegram & 45 & 36 & 80.0\% & 66.2--89.1\% & 0.0274 \\
-X & 45 & 0 & 0.0\% & 0.0--7.9\% & 1.0000 \\
-Instagram & 45 & 0 & 0.0\% & 0.0--7.9\% & 1.0000 \\
-WA image & 45 & 0 & 0.0\% & 0.0--7.9\% & 1.0000 \\
-\midrule
-Overall & 270 & 126 & 46.7\% & 40.8--52.6\% & 0.5173 \\
+\ResultTableRows
 \bottomrule
 \end{tabular}
 \end{table}
 
 \begin{figure}[H]
 \centering
-\begin{tikzpicture}
-\begin{axis}[width=\columnwidth,height=5.3cm,ybar,bar width=7pt,ymin=0,ymax=112,ylabel={Full-message recovery (\%)},symbolic x coords={Discord,WA Doc,Telegram,X,Instagram,WA Image},xtick=data,x tick label style={rotate=35,anchor=east,font=\scriptsize},ytick={0,20,40,60,80,100},nodes near coords,nodes near coords style={font=\scriptsize},grid=major]
-\addplot coordinates {(Discord,100) (WA Doc,100) (Telegram,80) (X,0) (Instagram,0) (WA Image,0)};
-\end{axis}
-\end{tikzpicture}
-\caption{Exact recovery rate by delivery mode.}
+\includegraphics[width=\columnwidth]{paper_figures/fig1_recovery_ci.pdf}
+\caption{Exact recovery rate by delivery mode with Wilson 95\% confidence intervals.}
 \label{fig:platform}
 \end{figure}
 
@@ -135,18 +115,8 @@ Telegram failures also illustrate why a single aggregate BER is insufficient. So
 
 \begin{figure}[H]
 \centering
-\begin{tikzpicture}
-\begin{axis}[width=\columnwidth,height=5.8cm,ybar,bar width=2.7pt,ymin=0,ymax=112,ylabel={Full-message recovery (\%)},symbolic x coords={small (10 B),medium (100 B),large (near max)},xtick=data,x tick label style={font=\scriptsize},ytick={0,20,40,60,80,100},legend style={font=\tiny,at={(0.5,-0.25)},anchor=north,legend columns=3},grid=major]
-\addplot coordinates {(small (10 B),100) (medium (100 B),100) (large (near max),100)};
-\addplot coordinates {(small (10 B),100) (medium (100 B),100) (large (near max),100)};
-\addplot coordinates {(small (10 B),93.3) (medium (100 B),93.3) (large (near max),53.3)};
-\addplot coordinates {(small (10 B),0) (medium (100 B),0) (large (near max),0)};
-\addplot coordinates {(small (10 B),0) (medium (100 B),0) (large (near max),0)};
-\addplot coordinates {(small (10 B),0) (medium (100 B),0) (large (near max),0)};
-\legend{Discord,WhatsApp Document,Telegram,Twitter / X,Instagram,WhatsApp Image}
-\end{axis}
-\end{tikzpicture}
-\caption{Recovery rate grouped by recorded payload class.}
+\includegraphics[width=\columnwidth]{paper_figures/fig2_payload_heatmap.pdf}
+\caption{Exact recovery by delivery mode and payload class; annotations show recovered trials over total trials, and hatched cells indicate combinations absent from the cohort design.}
 \label{fig:payload}
 \end{figure}
 
@@ -210,6 +180,15 @@ A bit error rate is useful only when the decoder can align the received bit posi
 
 The Telegram rows make this taxonomy concrete. Low or zero BER rows correspond to derivatives that retain a compatible grid. Rows with BER near one half indicate structural desynchronization. Rows with no BER correspond to payloads that exceeded delivered capacity. Treating these categories as one failure class would hide the actual engineering trade-off.
 
+\begin{figure}[H]
+\centering
+\includegraphics[width=\columnwidth]{paper_figures/fig3_failure_taxonomy.pdf}
+\caption{Failure taxonomy by delivery mode, generated from the canonical failure\_reason field. Segment labels show raw trial counts.}
+\label{fig:taxonomy}
+\end{figure}
+
+Figure~\ref{fig:taxonomy} makes the recorded terminal outcomes explicit. Discord and WhatsApp Document consist entirely of successful trials. Telegram contains 36 successes, seven capacity failures, and two Reed-Solomon decode failures; the canonical CSV contains no Telegram fixed-grid extraction failures. X, Instagram, and WhatsApp Image each contain 45 fixed-grid extraction failures.
+
 \safeSection{Security and Privacy Analysis}
 Confidentiality is provided by AES-GCM rather than by the visual concealment layer. An observer who extracts coefficient orderings without the passphrase still obtains ciphertext and cannot recover the authenticated plaintext under the cryptographic assumptions of AES-GCM and scrypt. The nonce is stored with the ciphertext because it is required for decryption but is not secret.
 
@@ -218,6 +197,13 @@ Integrity is equally important. A platform transformation that changes hidden bi
 The system does not claim steganalytic undetectability. Relative coefficient ordering leaves a statistical footprint, and repeated use of the same coefficient positions could be detectable by a sufficiently trained analyst. The contribution evaluated here is delivery survivability under known platform transforms, not resistance to a dedicated detector.
 
 A deployment must also separate passphrases from media distribution. The JPEG can be public while the passphrase remains out of band. Operational security therefore depends on key handling, account security, and the platform's metadata exposure in addition to the DCT payload itself.
+
+\begin{figure*}[!t]
+\centering
+\includegraphics[width=\textwidth]{paper_figures/fig4_system_pipeline.pdf}
+\caption{ShadowPost end-to-end system pipeline. The delivery/platform transform is the uncertain stage at which channel-dependent corruption or structural change is introduced.}
+\label{fig:pipeline}
+\end{figure*}
 
 \safeSection{Reproducibility Procedure}
 The repository contains the encoder and decoder, the phase experiments, platform-specific CSVs, the canonical master CSV, charts, and the downloaded Twitter/X and Instagram derivatives. A reproduction should first run the local API round-trip test, then inspect the cover manifest used by the structured cohort. The passphrase and message generator must remain unchanged when comparing results with the stored rows.
@@ -241,6 +227,8 @@ The benchmark is limited to the accounts, clients, image files, and dates repres
 The cohorts are intentionally not collapsed into one perfectly balanced design. The structured cohort tests payload scaling; the feed/media cohort tests a repeated 100-byte message under delivery paths that were already known to produce derivatives. This supports a practical channel comparison but does not support a claim that every platform has been evaluated at every payload size.
 
 The study does not measure peak signal-to-noise ratio, structural similarity, visual quality, computational latency, detector performance, or key-search cost. It also does not evaluate video, animated media, PNG delivery, or alternative client applications. These omissions define the next experimental phase rather than weaknesses that can be hidden by the current success rate.
+
+The Wilson 95\% intervals in Figure~\ref{fig:platform} remain wide with $N=45$ trials per delivery mode. The observed differences are therefore descriptive and suggestive for the tested configurations rather than statistically decisive platform comparisons.
 
 \safeSection{Extended Results Interpretation}
 The overall recovery rate of 46.7\% is not a single estimate of algorithm quality. It is the mixture of three channel regimes: two complete-preservation modes, one partially preserving mode, and three zero-recovery feed/image modes. The more useful engineering statement is conditional: when the JPEG structure is preserved, the current pipeline recovered every tested message; when the structure was spatially remapped, it recovered none in the tested rows.
@@ -362,19 +350,14 @@ This descriptive table compares the six tested delivery modes under their record
 \toprule
 Mode & Cohort & Exact & Terminal class \\
 \midrule
-Discord attachment & 15 x 3 & 45/45 & success \\
-WhatsApp document & 15 x 3 & 45/45 & success \\
-Telegram sendPhoto & 15 x 3 & 36/45 & capacity / fixed-grid \\
-X image post & 45 x 100 B & 0/45 & fixed-grid extraction \\
-Instagram feed & 45 x 100 B & 0/45 & fixed-grid extraction \\
-WhatsApp image & 45 x 100 B & 0/45 & fixed-grid extraction \\
+\ComparisonTableRows
 \bottomrule
 \end{tabularx}
 \end{table}
 
 The media subtype is part of the experimental condition. The tested file-attachment modes completed every trial, Telegram retained most but not all messages, and the three fixed-payload presentation paths produced no exact recoveries. These observations support workflow-specific engineering decisions while leaving other clients, accounts, dates, and upload settings open.
 
-\IEEEtriggeratref{8}
+\IEEEtriggeratref{12}
 \begin{thebibliography}{14}
 \bibitem{b1} W. Bender, D. Gruhl, N. Morimoto, and A. Lu, ``Techniques for data hiding,'' IBM Systems Journal, vol. 35, no. 3-4, pp. 313-336, 1996.
 \bibitem{b2} J. Fridrich, Steganography in Digital Media: Principles, Algorithms, and Applications. Cambridge, U.K.: Cambridge University Press, 2009.
