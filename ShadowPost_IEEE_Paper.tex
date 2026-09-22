@@ -17,8 +17,9 @@
 \newcolumntype{Y}{>{\raggedright\arraybackslash}X}
 \newcommand{\pathcell}[1]{\begingroup\ttfamily\scriptsize\path{#1}\endgroup}
 \input{paper_figures/generated_results.tex}
+\input{offline_analysis/generated_offline_results.tex}
 
-\title{ShadowPost: Measuring Native-JPEG DCT Steganography\\Survival Across Messaging and Social Platforms}
+\title{ShadowPost: An Empirical Delivery-Survivability Benchmark\\for Native-JPEG DCT Steganography}
 \author{\begin{tabular}{ccc}
 \begin{minipage}[t]{0.31\textwidth}\centering\textbf{Arman Rizwan Khan}\\\textit{Dept. of Computer Science and Engineering}\\Priyadarshini College of Engineering\\Nagpur, Maharashtra, India\\arman.rkhan24@gmail.com\end{minipage} &
 \begin{minipage}[t]{0.31\textwidth}\centering\textbf{Aditya Shakya}\\\textit{Dept. of Computer Science and Engineering}\\Priyadarshini College of Engineering\\Nagpur, Maharashtra, India\\adityashakya2712@gmail.com\end{minipage} &
@@ -32,7 +33,7 @@
 \maketitle
 
 \begin{abstract}
-Platform image processing can invalidate a steganographic payload even when the embedding algorithm is correct. This paper presents ShadowPost, a native-JPEG DCT system that encrypts a message with AES-256-GCM, protects it with RS(48,32) error correction, and encodes bits through relative ordering of mid-frequency luminance coefficient pairs. The evaluation comprises 270 delivery trials representing six delivery modes across five platforms. Exact recovery was 45/45 for Discord attachments, 45/45 for WhatsApp documents, 36/45 for Telegram sendPhoto, and 0/45 for the tested X, Instagram, and standard WhatsApp image paths. These results characterize the tested account, client, and date configurations rather than the platforms universally.
+Platform image processing can invalidate a steganographic payload even when the embedding algorithm is correct. This paper presents ShadowPost, a native-JPEG DCT system that encrypts a message with AES-256-GCM, protects it with RS(48,32) error correction, and encodes bits through relative ordering of mid-frequency luminance coefficient pairs. The evaluation comprises 270 delivery trials representing six delivery modes across five platforms, plus offline analysis of retained stego artifacts and controlled transformations. Exact recovery was 45/45 for Discord attachments, 45/45 for WhatsApp documents, 36/45 for Telegram sendPhoto, and 0/45 for the tested X, Instagram, and standard WhatsApp image paths. Controlled JPEG-quality changes remained recoverable, whereas resize and crop transformations broke the fixed block-grid assumption. These results characterize the tested account, client, and date configurations rather than the platforms universally.
 \end{abstract}
 \begin{IEEEkeywords}
 image steganography, JPEG DCT, Reed-Solomon, AES-GCM, platform recompression, survivability benchmark
@@ -52,7 +53,7 @@ Error-correcting codes are frequently added to robust data-hiding systems becaus
 
 ShadowPost differs from approaches that treat readable output as sufficient. AES-GCM authentication makes message recovery binary: the reconstructed ciphertext either authenticates or it does not. This prevents a damaged hidden stream from being interpreted as a valid plaintext. It also separates confidentiality from concealment; security does not depend on an observer failing to notice the embedding pattern.
 
-The main contribution of this work is therefore empirical and systems-oriented. It combines a fixed native-DCT embedding design with cryptographic framing and an explicit delivery-survivability benchmark. Positive and negative results are both retained, because a complete failure on a feed-oriented path is actionable evidence about the delivery channel rather than a reason to discard the trial.
+The main contribution of this work is an empirical delivery-survivability benchmark rather than a claim of a new embedding primitive. It combines a fixed native-DCT embedding design with cryptographic framing, a canonical platform-trial dataset, and controlled offline transformations. The measurements isolate a central failure boundary: coefficient-level noise remains recoverable in the retained artifacts, whereas geometric changes that move the 8 by 8 block grid defeat the fixed-grid extractor. Positive and negative results are both retained, because a complete failure on a feed-oriented path is actionable evidence about the delivery channel rather than a reason to discard the trial.
 
 Recent steganalysis work also shows that robustness and detectability must be evaluated together. Deep residual models can detect subtle distributional changes in image data [13], while modern JPEG steganography methods use adaptive distortion or synchronization-aware constructions to trade capacity against transformation tolerance [14]. ShadowPost does not claim to outperform those methods. Its narrower contribution is a transparent, reproducible benchmark of delivery survival for one fixed native-DCT design across six delivery modes.
 
@@ -72,6 +73,12 @@ The canonical CSV contains 270 rows. Telegram, Discord, and WhatsApp Document us
 
 \safeSubsection{Metrics}
 We report exact recovery rate, Wilson 95\% confidence intervals, and bit error rate (BER). BER is computed from rows with a recorded bit comparison; trials rejected before delivery have no BER and are excluded from the corresponding mean. Historical manual rows retain empty dimension fields, so the paper does not infer transformation magnitudes from dimensions that were not recorded. Delivery outcomes are interpreted from the checked-in extraction result and standardized failure class.
+
+\safeSubsection{Controlled offline transformations}
+No new platform uploads are used in the supplementary analysis. The retained Phase 3 AES-GCM stego JPEGs are transformed locally with JPEG quality factors 95, 75, and 50, with two resize conditions and two crop conditions. The current fixed-grid extractor is then run on every resulting derivative using the same cryptographic payload. JPEG-only conditions represent coefficient noise; resize and crop conditions represent geometric block-grid desynchronization. The outcome, BER, and aligned image-quality values are regenerated by \texttt{offline\_paper\_analysis.py}.
+
+\safeSubsection{Visual quality, artifact analysis, and ablations}
+Cover-to-stego quality is measured with PSNR and a local RGB SSIM approximation. For retained X and Instagram artifacts, thumbnails are used only to form a one-to-one source/return assignment; source images are resized to returned dimensions before aligned PSNR and SSIM are computed. This is an artifact-level quality analysis, not a row-level join to the canonical CSV. The CSV dimension columns are empty for the stored platform rows, so no platform-wide dimension-ratio correlation is claimed. Historical Phase 1 directories are compared descriptively across pair selections and JPEG qualities; they are not treated as a factorial causal experiment.
 
 \safeSection{Results}
 \begin{table}[H]
@@ -189,6 +196,146 @@ The Telegram rows make this taxonomy concrete. Low or zero BER rows correspond t
 
 Figure~\ref{fig:taxonomy} makes the recorded terminal outcomes explicit. Discord and WhatsApp Document consist entirely of successful trials. Telegram contains 36 successes, seven capacity failures, and two Reed-Solomon decode failures; the canonical CSV contains no Telegram fixed-grid extraction failures. X, Instagram, and WhatsApp Image each contain 45 fixed-grid extraction failures.
 
+\begin{table}[H]
+\caption{Failure taxonomy counts generated from the canonical CSV}
+\label{tab:failure}
+\centering
+\scriptsize
+\begin{tabular}{@{}lrrrrr@{}}
+\toprule
+Mode & Success & Grid & RS & Capacity & Auth. \\
+\midrule
+\OfflineFailureRows
+\bottomrule
+\end{tabular}
+\end{table}
+
+\safeSubsection{Controlled transform results}
+The controlled study separates coefficient noise from geometric desynchronization. The JPEG-only conditions retain exact recovery for every retained stego image, while every resize and crop condition fails under the current fixed-grid extractor. The BER values and aligned PSNR/SSIM are shown together because a visually similar derivative can still be structurally undecodable.
+
+\begin{table*}[!t]
+\caption{Offline controlled-transform study on retained Phase 3 stego JPEGs}
+\label{tab:transforms}
+\centering
+\scriptsize
+\begin{tabular}{@{}l l r r r r r@{}}
+\toprule
+Transform & Mechanism & Exact & Rate & Mean BER & Aligned PSNR (dB) & Aligned SSIM \\
+\midrule
+\OfflineTransformRows
+\bottomrule
+\end{tabular}
+\end{table*}
+
+\begin{figure}[H]
+\centering
+\includegraphics[width=\columnwidth]{offline_analysis/controlled_transform_effects.pdf}
+\caption{Offline transform study. JPEG-quality changes preserve recovery, while resize and crop conditions produce the geometric-desynchronization regime.}
+\label{fig:transforms}
+\end{figure}
+
+\safeSubsection{Capacity and payload robustness}
+The structured cohort provides three payload classes for Discord, Telegram, and WhatsApp Document. The generated capacity table reports exact recovery and mean observed BER without mixing in the fixed 100-byte feed cohort.
+
+\begin{table*}[!t]
+\caption{Recovery and observed BER by structured payload class}
+\label{tab:capacity}
+\centering
+\scriptsize
+\begin{tabular}{@{}l l r r r@{}}
+\toprule
+Mode & Payload class & Bytes & Exact & Mean observed BER \\
+\midrule
+\OfflineCapacityRows
+\bottomrule
+\end{tabular}
+\end{table*}
+
+\begin{figure}[H]
+\centering
+\includegraphics[width=\columnwidth]{offline_analysis/capacity_robustness.pdf}
+\caption{Capacity robustness curves generated from the structured Discord, Telegram, and WhatsApp Document cohorts.}
+\label{fig:capacity}
+\end{figure}
+
+\safeSubsection{Visual quality and embedding ablation}
+Across the 15 retained cover--stego pairs, the mean cover-to-stego PSNR is \OfflineMeanCoverPSNR~dB and mean local RGB SSIM is \OfflineMeanCoverSSIM. The artifact-level returned-media analysis is summarized in Table~\ref{tab:quality}; it must not be interpreted as a canonical platform dimension study.
+
+\begin{table}[H]
+\caption{Retained visual-quality and artifact-pairing summary}
+\label{tab:quality}
+\centering
+\scriptsize
+\begin{tabular}{@{}lrrrrr@{}}
+\toprule
+Mode & Pairs & Identical & PSNR & SSIM & Width ratio \\
+\midrule
+\OfflineQualityRows
+\bottomrule
+\end{tabular}
+\end{table}
+
+\begin{table}[H]
+\caption{Dimension-data coverage and artifact-level pairing caveat}
+\label{tab:dimensions}
+\centering
+\scriptsize
+\begin{tabularx}{\columnwidth}{@{}lrrrY@{}}
+\toprule
+Mode & CSV dims & Artifact pairs & Width ratio & Interpretation \\
+\midrule
+\OfflineDimensionRows
+\bottomrule
+\end{tabularx}
+\end{table}
+
+The Phase 1 comparison indicates that the historical all-pair, 512-bit configuration has a higher Q50 aggregate BER than the 0,2 pair configurations, while the tie-fixed run has the largest number of zero-error covers at Q50. Because the directories also differ in embedded bit count and decoder tie handling, these are descriptive configuration observations rather than an isolated causal effect of pair index.
+
+\begin{table}[H]
+\caption{Descriptive Phase 1 ablation across retained historical runs}
+\label{tab:ablation}
+\centering
+\scriptsize
+\begin{tabularx}{\columnwidth}{@{}Y l r r r r@{}}
+\toprule
+Run & Pairs & Bits & Q95 BER & Q50 BER & Zero-error \\
+\midrule
+\OfflineAblationRows
+\bottomrule
+\end{tabularx}
+\end{table}
+
+\begin{figure}[H]
+\centering
+\includegraphics[width=\columnwidth]{offline_analysis/phase1_ablation.pdf}
+\caption{Descriptive Phase 1 ablation across the retained historical configurations.}
+\label{fig:ablation}
+\end{figure}
+
+\safeSubsection{Basic detectability screening}
+We also ran a transparent paired coefficient-statistic screen over retained cover--stego pairs. It is not a rich-model steganalysis benchmark and is not a security certificate. The leave-one-out balanced-accuracy results are shown in Table~\ref{tab:detectability}; the corresponding figure is included to make the screening scope explicit.
+
+\begin{table}[H]
+\caption{Paired coefficient-statistic detectability screen}
+\label{tab:detectability}
+\centering
+\scriptsize
+\begin{tabularx}{\columnwidth}{@{}Y c c c c@{}}
+\toprule
+Run & Bits & Cover TN & Stego TP & Balanced acc. \\
+\midrule
+\OfflineDetectabilityRows
+\bottomrule
+\end{tabularx}
+\end{table}
+
+\begin{figure}[H]
+\centering
+\includegraphics[width=\columnwidth]{offline_analysis/detectability_screen.pdf}
+\caption{Balanced accuracy of the transparent paired-statistic screen; this is not rich-model steganalysis.}
+\label{fig:detectability}
+\end{figure}
+
 \safeSection{Security and Privacy Analysis}
 Confidentiality is provided by AES-GCM rather than by the visual concealment layer. An observer who extracts coefficient orderings without the passphrase still obtains ciphertext and cannot recover the authenticated plaintext under the cryptographic assumptions of AES-GCM and scrypt. The nonce is stored with the ciphertext because it is required for decryption but is not secret.
 
@@ -226,22 +373,24 @@ The benchmark is limited to the accounts, clients, image files, and dates repres
 
 The cohorts are intentionally not collapsed into one perfectly balanced design. The structured cohort tests payload scaling; the feed/media cohort tests a repeated 100-byte message under delivery paths that were already known to produce derivatives. This supports a practical channel comparison but does not support a claim that every platform has been evaluated at every payload size.
 
-The study does not measure peak signal-to-noise ratio, structural similarity, visual quality, computational latency, detector performance, or key-search cost. It also does not evaluate video, animated media, PNG delivery, or alternative client applications. These omissions define the next experimental phase rather than weaknesses that can be hidden by the current success rate.
+The offline extension measures sender-side PSNR/SSIM, selected returned-media quality, and a transparent coefficient-statistic screening procedure, but it does not provide a full rich-model detector benchmark, computational latency study, or key-search analysis. It also does not evaluate video, animated media, PNG delivery, or alternative client applications. The returned-media quality joins are artifact-level assignments, and the canonical CSV has zero populated dimension rows; therefore no platform-wide dimension-ratio correlation is claimed.
 
 The Wilson 95\% intervals in Figure~\ref{fig:platform} remain wide with $N=45$ trials per delivery mode. The observed differences are therefore descriptive and suggestive for the tested configurations rather than statistically decisive platform comparisons.
 
 \safeSection{Extended Results Interpretation}
-The overall recovery rate of 46.7\% is not a single estimate of algorithm quality. It is the mixture of three channel regimes: two complete-preservation modes, one partially preserving mode, and three zero-recovery feed/image modes. The more useful engineering statement is conditional: when the JPEG structure is preserved, the current pipeline recovered every tested message; when the structure was spatially remapped, it recovered none in the tested rows.
+The overall recovery rate of 46.7\% is not a single estimate of algorithm quality. It is the mixture of three channel regimes: two complete-preservation modes, one partially preserving mode, and three zero-recovery feed/image modes. The more useful engineering statement is conditional: when the JPEG structure is preserved, the current pipeline recovered every tested message; when the structure was spatially remapped, it recovered none in the tested rows. The controlled offline study supports the same interpretation without adding platform trials: JPEG-only quality changes preserve recovery, while resize and crop conditions move the receiver off the sender's block lattice.
 
 The result also shows why a platform benchmark should report delivery mode explicitly. A product requirement such as ``works on WhatsApp'' is underspecified. The document and image paths have opposite outcomes in this dataset. Similarly, a public feed post is not equivalent to attaching the original JPEG as a file, even if the visual image looks identical to a user.
 
 The main design opportunity is synchronization. A future version could embed a redundant multi-scale marker, infer the delivered block grid from a known cover region, or use a spatial-domain fallback for the scale transform before DCT extraction. Each alternative changes the threat model and must be evaluated separately; none should be silently mixed into the current benchmark.
 
 \safeSection{Discussion}
-The results separate two properties that are often conflated: payload robustness and channel preservation. RS parity can correct bounded coefficient errors, but it cannot reconstruct a payload when the receiver loses block-grid alignment or when the platform has replaced the JPEG with a substantially different spatial representation. The 100\% results therefore characterize the tested file-attachment modes, whereas the 0\% feed/image results show that the current native-grid decoder is not invariant to arbitrary rescaling. Telegram occupies an intermediate regime, with some returned media decodable and others failing structurally.
+The results separate two properties that are often conflated: payload robustness and channel preservation. RS parity is sufficient for the bounded coefficient perturbations observed in the preserved-grid conditions, but it cannot reconstruct a payload when the receiver loses block-grid alignment or when the platform replaces the JPEG with a substantially different spatial representation. The controlled transform study makes this boundary explicit: lowering JPEG quality alone leaves the retained messages recoverable, while even modest resize and crop operations produce the geometric-desynchronization regime. The platform taxonomy is consistent with this mechanism. The tested file-attachment modes preserve the coordinate system, Telegram occupies an intermediate regime with capacity and RS failures, and the feed/image paths produce fixed-grid extraction failures.
+
+This finding changes the primary design target for a next version. More parity is useful only after a receiver has identified the correct spatial lattice. Synchronization-aware pilots, multi-scale registration, or a spatial fallback should therefore be evaluated before increasing RS redundancy. The present paper does not claim that such a mitigation has been implemented; it establishes the failure boundary that a mitigation must address.
 
 \safeSection{Conclusion}
-ShadowPost combines native-JPEG DCT embedding, authenticated encryption, and Reed-Solomon coding in a descriptive delivery-survivability benchmark. Across 270 recorded trials, exact recovery was 46.7\% overall, with complete recovery on the tested Discord attachments and WhatsApp documents, partial recovery on Telegram, and no recovery on the tested X, Instagram, or standard WhatsApp image paths. The central engineering conclusion is direct: error correction helps only while the delivery path preserves enough of the original DCT coordinate system for extraction to remain meaningful.
+ShadowPost is an empirical delivery-survivability benchmark for a fixed native-JPEG DCT steganography pipeline. Across 270 recorded trials, exact recovery was 46.7\% overall, with complete recovery on the tested Discord attachments and WhatsApp documents, partial recovery on Telegram, and no recovery on the tested X, Instagram, or standard WhatsApp image paths. The offline analyses show the same engineering principle under controlled conditions: coefficient-level noise can remain within the protection offered by the current extractor and RS(48,32), but geometric desynchronization is the dominant failure mode for feed-style delivery. Consequently, future robustness work should prioritize synchronization and delivered-grid estimation rather than treating additional coefficient-level parity as a universal remedy.
 
 \appendices
 \safeSection{Cover Manifest}

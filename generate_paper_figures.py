@@ -50,7 +50,7 @@ def wilson(successes: int, trials: int, z: float = 1.96) -> tuple[float, float]:
 def configure() -> None:
     plt.rcParams.update({
         "font.family": "serif",
-        "font.serif": ["Times New Roman", "TeX Gyre Termes", "DejaVu Serif"],
+        "font.serif": ["Times New Roman", "Times", "DejaVu Serif"],
         "font.size": 8,
         "axes.labelsize": 8,
         "axes.titlesize": 9,
@@ -88,6 +88,10 @@ def figure1(rows: list[dict[str, str]]) -> None:
                   yerr=np.array([low, high]), capsize=2.5, error_kw={"elinewidth": 0.8, "capthick": 0.8})
     for bar, hatch, ok, n in zip(bars, hatches, [successes[p] for p in ORDER], [counts[p] for p in ORDER]):
         bar.set_hatch(hatch)
+        if bar.get_height() == 0:
+            # Keep zero-outcome modes visibly present in print and grayscale.
+            ax.plot([bar.get_x() + 0.12, bar.get_x() + bar.get_width() - 0.12],
+                    [0, 0], color=bar.get_facecolor(), linewidth=2.2, solid_capstyle="butt", zorder=4)
         ax.text(bar.get_x() + bar.get_width()/2, max(bar.get_height() + 4, 3), f"{ok}/{n}", ha="center", va="bottom", fontsize=6.5)
     ax.set_xticks(range(6), [LABELS[p] for p in ORDER], rotation=28, ha="right")
     ax.set_ylabel("Exact recovery rate (%)")
@@ -122,27 +126,55 @@ def figure2(rows: list[dict[str, str]]) -> None:
                 matrix[i, j] = 100 * ok / len(group)
                 annotations[i][j] = f"{ok}/{len(group)}"
     fig, ax = plt.subplots(figsize=(3.45, 2.65))
-    cmap = matplotlib.colormaps["cividis"].copy()
-    cmap.set_bad("#E6E6E6")
-    image = ax.imshow(matrix, cmap=cmap, vmin=0, vmax=100, aspect="auto")
+    # Draw each heatmap cell as a vector rectangle.  Using imshow here would
+    # rasterize the full matrix when the PDF/EPS is written, which makes the
+    # small recovery annotations and cell boundaries soft at IEEE scale.
+    cmap = matplotlib.colormaps["cividis"]
+    norm = matplotlib.colors.Normalize(vmin=0, vmax=100)
     for i in range(6):
         for j in range(3):
             if np.isnan(matrix[i, j]):
-                ax.add_patch(plt.Rectangle((j-.5, i-.5), 1, 1, fill=False, hatch="///", edgecolor="0.35", linewidth=0.6))
+                ax.add_patch(plt.Rectangle(
+                    (j - .5, i - .5), 1, 1,
+                    facecolor="#E6E6E6", edgecolor="0.35", linewidth=0.6,
+                    hatch="///",
+                ))
                 color = "black"
             else:
+                ax.add_patch(plt.Rectangle(
+                    (j - .5, i - .5), 1, 1,
+                    facecolor=cmap(norm(matrix[i, j])), edgecolor="white", linewidth=0.8,
+                ))
                 color = "white" if matrix[i, j] < 35 or matrix[i, j] > 75 else "black"
             ax.text(j, i, annotations[i][j], ha="center", va="center", color=color, fontweight="bold", fontsize=7)
     ax.set_xticks(range(3), classes)
     ax.set_yticks(range(6), [LABELS[p] for p in ORDER])
     ax.set_xlabel("Payload class")
     ax.set_ylabel("Delivery mode")
+    ax.set_xlim(-.5, 2.5)
+    ax.set_ylim(5.5, -.5)
     ax.set_xticks(np.arange(-.5, 3, 1), minor=True)
     ax.set_yticks(np.arange(-.5, 6, 1), minor=True)
     ax.grid(which="minor", color="white", linewidth=1.2)
     ax.tick_params(which="minor", bottom=False, left=False)
-    cbar = fig.colorbar(image, ax=ax, fraction=0.05, pad=0.04)
-    cbar.set_label("Exact recovery rate (%)")
+    # A continuous Matplotlib colorbar is emitted as a tiny raster strip by
+    # some backends.  Use vector swatches instead so this figure remains
+    # completely vector-native in both PDF and EPS output.
+    fig.subplots_adjust(right=0.83)
+    cbar_ax = fig.add_axes([0.855, 0.17, 0.025, 0.68])
+    swatches = 50
+    for k in range(swatches):
+        y0 = 100 * k / swatches
+        cbar_ax.add_patch(plt.Rectangle(
+            (0, y0), 1, 100 / swatches,
+            facecolor=cmap(norm(y0 + 50 / swatches)), edgecolor="none",
+        ))
+    cbar_ax.set_xlim(0, 1)
+    cbar_ax.set_ylim(0, 100)
+    cbar_ax.set_xticks([])
+    cbar_ax.set_yticks([0, 20, 40, 60, 80, 100])
+    cbar_ax.tick_params(axis="y", labelsize=6, length=2, pad=2)
+    cbar_ax.set_ylabel("Exact recovery rate (%)", fontsize=7, labelpad=5)
     save(fig, "fig2_payload_heatmap")
 
 
@@ -169,6 +201,14 @@ def figure3(rows: list[dict[str, str]]) -> None:
                 ax.text(left[i] + values[i, j]/2, i, str(raw[i, j]), ha="center", va="center", fontsize=6.5,
                         color="white" if color in {"#0072B2", "#D55E00"} else "black")
         left += values[:, j]
+    # The two Telegram RS-decode failures occupy only 4.4% of its bar.
+    telegram_index = ORDER.index("telegram")
+    rs_index = categories.index("reed_solomon_decode_failed")
+    rs_mid = values[telegram_index, :rs_index].sum() + values[telegram_index, rs_index] / 2
+    ax.annotate("Telegram: 2 RS-decode trials", xy=(rs_mid, telegram_index),
+                xytext=(56, telegram_index - 0.75), textcoords="data",
+                arrowprops={"arrowstyle": "-", "lw": 0.65, "color": "black"},
+                fontsize=6.2, ha="left", va="center")
     ax.set_yticks(range(6), [LABELS[p] for p in ORDER])
     ax.invert_yaxis()
     ax.set_xlim(0, 100)

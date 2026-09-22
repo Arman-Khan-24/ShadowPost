@@ -1,0 +1,7 @@
+platform,csv_rows,csv_dimension_rows,artifact_paired_rows,mean_width_ratio,min_width_ratio,max_width_ratio,ber_rows,spearman_width_ratio_vs_ber,note
+discord,45,0,0,,,,0,,no row-level delivered dimensions available
+telegram,45,0,0,,,,0,,no row-level delivered dimensions available
+whatsapp_document,45,0,0,,,,0,,no row-level delivered dimensions available
+twitter,45,0,45,0.9891550925925925,0.5119791666666667,1.0,45,,artifact pairing available
+instagram,45,0,45,0.9708333333333333,0.5625,1.0,45,,artifact pairing available
+whatsapp_image,45,0,0,,,,0,,no row-level delivered dimensions available

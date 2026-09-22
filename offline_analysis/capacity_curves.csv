@@ -1,0 +1,10 @@
+platform,payload_class,n,successes,min_bytes,max_bytes,ber_n,mean_observed_ber
+discord,10 B,15,15,10,10,15,0.0
+discord,100 B,15,15,100,100,15,0.0
+discord,near capacity,15,15,641,21569,15,0.0
+telegram,10 B,15,14,10,10,15,0.0359375
+telegram,100 B,15,14,100,100,15,0.03350694466666667
+telegram,near capacity,15,8,641,21569,8,0.00010982
+whatsapp_document,10 B,15,15,10,10,15,0.0
+whatsapp_document,100 B,15,15,100,100,15,0.0
+whatsapp_document,near capacity,15,15,641,21569,15,0.0

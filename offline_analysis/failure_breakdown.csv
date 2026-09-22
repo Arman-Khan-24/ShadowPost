@@ -1,0 +1,9 @@
+platform,outcome,n,ber_observed,mean_ber
+discord,success,45,45,0.0
+instagram,fixed_grid_extraction_failed,45,45,1.0
+telegram,capacity_failure,7,0,
+telegram,reed_solomon_decode_failed,2,2,0.513932295
+telegram,success,36,36,0.0004077955555555556
+twitter,fixed_grid_extraction_failed,45,45,1.0
+whatsapp_document,success,45,45,0.0
+whatsapp_image,fixed_grid_extraction_failed,45,45,1.0

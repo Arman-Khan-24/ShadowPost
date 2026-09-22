@@ -1,0 +1,99 @@
+{
+  "controlled": {
+    "crop_0.02_q95": {
+      "success": 0,
+      "n": 15
+    },
+    "crop_0.05_q75": {
+      "success": 0,
+      "n": 15
+    },
+    "jpeg_q50": {
+      "success": 15,
+      "n": 15
+    },
+    "jpeg_q75": {
+      "success": 15,
+      "n": 15
+    },
+    "jpeg_q95": {
+      "success": 15,
+      "n": 15
+    },
+    "resize_0.75_q75": {
+      "success": 0,
+      "n": 15
+    },
+    "resize_0.9_q95": {
+      "success": 0,
+      "n": 15
+    }
+  },
+  "detectability": [
+    {
+      "run": "phase1_results",
+      "payload_bits": 512,
+      "pair_indices": "0,1,2,3",
+      "n_pairs": 15,
+      "true_negative": 8,
+      "true_positive": 8,
+      "balanced_accuracy": 0.5333333333333333
+    },
+    {
+      "run": "phase1_results_positions_0_2",
+      "payload_bits": 256,
+      "pair_indices": "0,2",
+      "n_pairs": 15,
+      "true_negative": 8,
+      "true_positive": 8,
+      "balanced_accuracy": 0.5333333333333333
+    },
+    {
+      "run": "phase1_results_positions_0_2_tie_fixed",
+      "payload_bits": 256,
+      "pair_indices": "0,2",
+      "n_pairs": 15,
+      "true_negative": 8,
+      "true_positive": 8,
+      "balanced_accuracy": 0.5333333333333333
+    },
+    {
+      "run": "phase3_aes_gcm_results_q95",
+      "payload_bits": 384,
+      "pair_indices": "0,2",
+      "n_pairs": 15,
+      "true_negative": 8,
+      "true_positive": 8,
+      "balanced_accuracy": 0.5333333333333333
+    }
+  ],
+  "dimension_caveat": "CSV dimensions empty; delivered filenames do not identify their original covers. No platform dimension ratio is estimable.",
+  "ablation_caveat": "Historical runs differ in pair subset, bit count, and decoder tie rule; gap remains 24. Not a factorial causal ablation.",
+  "texture_association": {
+    "spearman_rho": -0.5488695843700093,
+    "pvalue": 0.03409736320821886,
+    "n": 15
+  },
+  "visual_quality": {
+    "cover_to_stego_n": 15,
+    "mean_psnr": 46.64376799020606,
+    "mean_ssim": 0.9884546818441237
+  },
+  "delivered_quality": {
+    "instagram": {
+      "n": 45,
+      "identical_pixel_pairs": 37,
+      "mean_finite_aligned_psnr": 30.983146267416025,
+      "mean_aligned_ssim": 0.9464473339196752,
+      "mean_width_ratio": 0.9708333333333333
+    },
+    "twitter": {
+      "n": 45,
+      "identical_pixel_pairs": 41,
+      "mean_finite_aligned_psnr": 33.03561011048308,
+      "mean_aligned_ssim": 0.9949082549994616,
+      "mean_width_ratio": 0.9891550925925925
+    }
+  },
+  "ssim_caveat": "Local 11x11 RGB SSIM. Delivered images are matched one-to-one by thumbnails and source images are resized to returned dimensions before aligned PSNR/SSIM; this is an artifact-level pairing, not a canonical CSV join."
+}

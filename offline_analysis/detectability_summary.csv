@@ -1,0 +1,5 @@
+run,payload_bits,pair_indices,n_pairs,true_negative,true_positive,balanced_accuracy
+phase1_results,512,"0,1,2,3",15,8,8,0.5333333333333333
+phase1_results_positions_0_2,256,"0,2",15,8,8,0.5333333333333333
+phase1_results_positions_0_2_tie_fixed,256,"0,2",15,8,8,0.5333333333333333
+phase3_aes_gcm_results_q95,384,"0,2",15,8,8,0.5333333333333333
