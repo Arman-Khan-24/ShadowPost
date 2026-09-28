@@ -842,7 +842,9 @@
   </footer>
 
 <script>
-const API = window.location.origin;
+const API = (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1')
+  ? window.location.origin
+  : (window.SHADOWPOST_API || 'https://shadowpost.onrender.com');
 
 const PLATFORM_DETAILS = {
   instagram: {
