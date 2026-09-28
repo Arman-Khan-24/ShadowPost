@@ -5,11 +5,34 @@ run_trials.bat
 # Generated local artifacts.
 __pycache__/
 *.py[cod]
+*$py.class
+*.so
+.pytest_cache/
+.coverage
+htmlcov/
+
+# Environments
+.venv/
+venv/
+env/
+ENV/
+
+# Logs and trials
 phase5_results/*.log
 phase5_results/*.pid
+*.log
+
+# LaTeX build artifacts
 paper_render/
 latex_render/
 paper_render_final/
 template_render/
 *.aux
-*.log
+
+# OS & Editor artifacts
+.DS_Store
+Thumbs.db
+*.swp
+*.tmp
+.vscode/
+.idea/

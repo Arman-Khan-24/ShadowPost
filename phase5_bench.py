@@ -23,10 +23,7 @@ from app import app, capacity_for_jpeg
 from phase1_native_dct_experiment import extract_native_dct
 
 ROOT = Path(__file__).resolve().parent
-COVERS_DIR = Path(os.getenv(
-    "SHADOWPOST_COVERS_DIR",
-    r"C:\Users\aakaa\Pictures\Wallpaper.Engine.v2.5.28\Wallpaper.Engine.v2.5.28\Wallpaper.Engine.v2.5.28\projects\defaultprojects",
-))
+COVERS_DIR = Path(os.getenv("SHADOWPOST_COVERS_DIR", str(ROOT / "covers")))
 RESULTS_FILE = ROOT / "phase5_results" / "platform_trials.csv"
 PHASE1_TRIALS_FILE = ROOT / "phase1_results_positions_0_2_tie_fixed" / "phase1_trials.csv"
 PASSPHRASE = "ShadowPost Phase 5 test passphrase"

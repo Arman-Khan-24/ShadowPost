@@ -9,7 +9,7 @@ matplotlib.use("Agg")
 import matplotlib.pyplot as plt
 import pandas as pd
 
-ROOT = Path(r"C:\Users\aakaa\ShadowPost")
+ROOT = Path(__file__).resolve().parent
 TRIAL_CSV = ROOT / "phase5_results" / "platform_trials.csv"
 OUT_DIR = ROOT / "phase7_results"
 PLATFORM_ORDER = (

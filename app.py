@@ -22,13 +22,21 @@ from phase1_native_dct_experiment import embed_native_dct, extract_native_dct, l
 from phase2_rs_roundtrip import bits_to_bytes, bytes_to_bits
 from phase3_aes_gcm_roundtrip import NONCE_BYTES, TAG_BYTES, RS_PARITY_BYTES, derive_aes256_key
 
+ALLOWED_ORIGINS = [
+    "http://localhost:8000",
+    "http://127.0.0.1:8000",
+    "http://localhost:3000",
+    "http://127.0.0.1:3000",
+    "https://shadow-post-gules.vercel.app",
+]
+
 app = FastAPI(title="ShadowPost Adaptive Platform")
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["*"],
-    allow_origin_regex=r"https?://(localhost|127\.0\.0\.1)(:\d+)?",
-    allow_credentials=False,
-    allow_methods=["*"],
+    allow_origins=ALLOWED_ORIGINS,
+    allow_origin_regex=r"https?://(localhost|127\.0\.0\.1)(:\d+)?|https://.*\.vercel\.app",
+    allow_credentials=True,
+    allow_methods=["GET", "POST", "OPTIONS"],
     allow_headers=["*"],
 )
 
@@ -251,10 +259,17 @@ def decode_file(source: Path, passphrase: str) -> str:
     return AESGCM(key).decrypt(nonce, ciphertext_and_tag, None).decode("utf-8")
 
 
+MAX_UPLOAD_BYTES = 25 * 1024 * 1024  # 25 MB
+
+
 async def _save_upload(upload: UploadFile, directory: Path, name: str) -> Path:
     data = await upload.read()
     if not data:
-        raise HTTPException(400, "uploaded image is empty")
+        raise HTTPException(400, "Uploaded image is empty")
+    if len(data) > MAX_UPLOAD_BYTES:
+        raise HTTPException(400, f"Image exceeds maximum allowed size ({MAX_UPLOAD_BYTES // (1024 * 1024)}MB)")
+    if not data.startswith(b"\xff\xd8"):
+        raise HTTPException(400, "Invalid image format: file must be a valid JPEG (missing SOI marker)")
     path = directory / name
     path.write_bytes(data)
     return path
@@ -263,6 +278,9 @@ async def _save_upload(upload: UploadFile, directory: Path, name: str) -> Path:
 @app.get("/")
 async def index():
     """Serve the adaptive platform web UI."""
+    index_path = Path(__file__).resolve().parent / "index.html"
+    if index_path.is_file():
+        return FileResponse(index_path)
     html_path = Path(__file__).resolve().parent / "frontend.html"
     if html_path.is_file():
         return FileResponse(html_path)
@@ -343,4 +361,4 @@ async def decode(stego: UploadFile = File(...), passphrase: str = Form(...)):
         except (ValueError, UnicodeDecodeError) as exc:
             raise HTTPException(400, f"Decode failed: {exc}")
         except Exception as exc:
-            raise HTTPException(400, f"Decode error: {type(exc).__name__}")
+            raise HTTPException(400, f"Decode failed: {exc}")

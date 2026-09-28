@@ -5,8 +5,8 @@ RUN apt-get update && apt-get install -y --no-install-recommends libjpeg-dev \
 
 WORKDIR /app
 
-COPY requirements-phase1.txt .
-RUN pip install --no-cache-dir -r requirements-phase1.txt
+COPY requirements.txt .
+RUN pip install --no-cache-dir -r requirements.txt
 
 COPY . .
 
