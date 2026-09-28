@@ -637,11 +637,11 @@
             </div>
           </div>
           <h3 class="card-title">Instagram Post</h3>
-          <p class="card-desc">Auto-crops to 1080x1080 square canvas with Gap=36 to withstand Meta's aggressive recompression pipeline.</p>
+          <p class="card-desc">Auto-crops to 1080x1080 square canvas with optimized Gap=14 for imperceptible luminance embedding.</p>
         </div>
         <div class="card-meta">
           <span>Target: 1080x1080</span>
-          <span>Gap: 36 (High)</span>
+          <span>Gap: 14</span>
         </div>
       </div>
 
@@ -659,11 +659,11 @@
             </div>
           </div>
           <h3 class="card-title">Twitter / X Post</h3>
-          <p class="card-desc">Normalizes dimensions to ≤1200px and enforces baseline Huffman quantization to survive Twitter feed delivery.</p>
+          <p class="card-desc">Normalizes dimensions to ≤1200px and applies Huffman baseline quantization to survive Twitter feed delivery.</p>
         </div>
         <div class="card-meta">
           <span>Target: ≤1200px</span>
-          <span>Gap: 32</span>
+          <span>Gap: 14</span>
         </div>
       </div>
 
@@ -686,7 +686,7 @@
         </div>
         <div class="card-meta">
           <span>Target: ≤1280px</span>
-          <span>Gap: 28</span>
+          <span>Gap: 14</span>
         </div>
       </div>
 
@@ -868,14 +868,14 @@ const API = (window.location.hostname === 'localhost' || window.location.hostnam
 const PLATFORM_DETAILS = {
   instagram: {
     title: "Encode for Instagram Feed",
-    subtitle: "Auto-crops to 1080x1080 native square canvas, Gap 36, pre-quantized for Meta's transcoder.",
+    subtitle: "Auto-crops to 1080x1080 native square canvas, Gap 14, pre-conditioned for clean luminance embedding.",
     badge: "Profile: Instagram Feed",
     badgeBg: "linear-gradient(135deg, #833ab4, #fd1d1d)",
     badgeColor: "#fff"
   },
   twitter: {
     title: "Encode for Twitter / X",
-    subtitle: "Normalizes bounds to ≤1200px and applies Huffman baseline quantization to survive feed transcoding.",
+    subtitle: "Normalizes bounds to ≤1200px and applies Gap 14 baseline quantization to prevent pixel distortion.",
     badge: "Profile: Twitter / X",
     badgeBg: "#000",
     badgeColor: "#fff"
