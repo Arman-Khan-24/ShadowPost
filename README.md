@@ -1,6 +1,8 @@
 <div align="center">
 
-# 🛡️ ShadowPost
+<img src="docs/logo.png" alt="ShadowPost Logo" width="110" style="border-radius: 22px; margin-bottom: 12px; box-shadow: 0 8px 24px rgba(56, 189, 248, 0.35);" />
+
+# ShadowPost
 
 ### Adaptive Native-JPEG DCT Steganography Platform
 
