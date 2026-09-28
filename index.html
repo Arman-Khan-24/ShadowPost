@@ -1,1374 +1,1052 @@
 <!doctype html>
 <html lang="en">
 <head>
-  <meta charset="utf-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0">
-  <title>ShadowPost — Adaptive Native-JPEG Steganography</title>
-  <meta name="description" content="Channel-adaptive native JPEG DCT steganography platform with AES-256-GCM encryption and Reed-Solomon RS(48,32) error correction.">
-  <link rel="icon" type="image/png" href="docs/logo.png">
-  <link rel="preconnect" href="https://fonts.googleapis.com">
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
-  <style>
-    :root {
-      --bg: #090d16;
-      --bg-surface: #0f172a;
-      --bg-card: #141e33;
-      --bg-card-hover: #192640;
-      --border: #1e293b;
-      --border-focus: #38bdf8;
-      --text: #f8fafc;
-      --text-muted: #94a3b8;
-      --text-dim: #64748b;
-      --primary: #0284c7;
-      --primary-hover: #0369a1;
-      --accent-cyan: #38bdf8;
-      --accent-emerald: #10b981;
-      --accent-amber: #f59e0b;
-      --accent-rose: #f43f5e;
-      --radius-sm: 6px;
-      --radius-md: 10px;
-      --radius-lg: 14px;
-      --font-sans: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
-      --font-mono: 'JetBrains Mono', monospace;
-    }
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>ShadowPost — Adaptive Social Steganography Platform</title>
+<link rel="icon" type="image/png" href="docs/logo.png">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --primary: #4338ca;
+    --primary-light: #6366f1;
+    --primary-dark: #312e81;
+    --hero-bg: radial-gradient(135% 100% at 50% 0%, #1e1b4b 0%, #0f172a 60%, #030712 100%);
+    --bg-light: #f8fafc;
+    --card-bg: #ffffff;
+    --text-dark: #0f172a;
+    --text-muted: #64748b;
+    --border-light: #e2e8f0;
+    --accent-yellow: #f59e0b;
+    --accent-yellow-hover: #d97706;
+    --accent-insta: linear-gradient(135deg, #833ab4, #fd1d1d, #fcb045);
+    --accent-twitter: #000000;
+    --accent-telegram: #229ed9;
+    --accent-discord: #5865f2;
+    --font: 'Plus Jakarta Sans', system-ui, -apple-system, sans-serif;
+    --font-mono: 'JetBrains Mono', monospace;
+  }
 
-    * { box-sizing: border-box; margin: 0; padding: 0; }
-    html { -webkit-text-size-adjust: 100%; scroll-behavior: smooth; }
-    body {
-      font-family: var(--font-sans);
-      background-color: var(--bg);
-      color: var(--text);
-      line-height: 1.5;
-      min-height: 100vh;
-      display: flex;
-      flex-direction: column;
-      -webkit-font-smoothing: antialiased;
-    }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  html { scroll-behavior: smooth; }
+  body {
+    font-family: var(--font);
+    background-color: var(--bg-light);
+    color: var(--text-dark);
+    line-height: 1.5;
+    -webkit-font-smoothing: antialiased;
+    overflow-x: hidden;
+  }
 
-    /* ==================== HEADER & NAVBAR ==================== */
-    header {
-      background: var(--bg-surface);
-      border-bottom: 1px solid var(--border);
-      position: sticky;
-      top: 0;
-      z-index: 40;
-    }
-    .header-inner {
-      max-width: 1080px;
-      margin: 0 auto;
-      padding: 12px 20px;
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      gap: 16px;
-    }
-    .brand {
-      display: flex;
-      align-items: center;
-      gap: 12px;
-      text-decoration: none;
-      color: var(--text);
-    }
-    .brand-logo {
-      width: 36px;
-      height: 36px;
-      border-radius: var(--radius-md);
-      object-fit: cover;
-      border: 1px solid rgba(56, 189, 248, 0.3);
-      box-shadow: 0 0 12px rgba(56, 189, 248, 0.15);
-      background: #000;
-    }
-    .brand-text {
-      display: flex;
-      flex-direction: column;
-    }
-    .brand-title {
-      font-size: 17px;
-      font-weight: 700;
-      letter-spacing: -0.02em;
-      display: flex;
-      align-items: center;
-      gap: 8px;
-    }
-    .brand-tag {
-      font-size: 10.5px;
-      font-family: var(--font-mono);
-      background: rgba(56, 189, 248, 0.12);
-      color: var(--accent-cyan);
-      border: 1px solid rgba(56, 189, 248, 0.25);
-      padding: 1px 6px;
-      border-radius: 4px;
-      font-weight: 500;
-    }
-    .brand-subtitle {
-      font-size: 11.5px;
-      color: var(--text-dim);
-      font-weight: 400;
-    }
-    .header-actions {
-      display: flex;
-      align-items: center;
-      gap: 14px;
-    }
-    .nav-link {
-      color: var(--text-muted);
-      text-decoration: none;
-      font-size: 13.5px;
-      font-weight: 500;
-      transition: color 0.15s ease;
-      display: inline-flex;
-      align-items: center;
-      gap: 6px;
-    }
-    .nav-link:hover { color: var(--text); }
-    .status-pill {
-      display: inline-flex;
-      align-items: center;
-      gap: 6px;
-      font-size: 12px;
-      font-family: var(--font-mono);
-      color: var(--text-muted);
-      background: var(--bg-card);
-      padding: 5px 10px;
-      border-radius: 20px;
-      border: 1px solid var(--border);
-    }
-    .status-dot {
-      width: 7px;
-      height: 7px;
-      border-radius: 50%;
-      background: var(--accent-emerald);
-      box-shadow: 0 0 6px var(--accent-emerald);
-    }
+  /* ==================== NAVIGATION ==================== */
+  nav {
+    position: absolute; top: 0; left: 0; right: 0;
+    display: flex; justify-content: space-between; align-items: center;
+    padding: 20px 48px; z-index: 50; max-width: 1440px; margin: 0 auto;
+  }
+  .nav-logo {
+    display: flex; align-items: center; gap: 10px;
+    text-decoration: none; color: #fff; font-weight: 800; font-size: 21px;
+    letter-spacing: -0.03em;
+  }
+  .nav-logo-icon {
+    width: 36px; height: 36px; border-radius: 10px;
+    background: linear-gradient(135deg, #6366f1, #a855f7);
+    display: flex; align-items: center; justify-content: center;
+    box-shadow: 0 4px 14px rgba(99, 102, 241, 0.4); flex-shrink: 0;
+  }
+  .nav-links {
+    display: flex; align-items: center; gap: 28px; list-style: none;
+  }
+  .nav-links a {
+    color: #cbd5e1; text-decoration: none; font-size: 14px; font-weight: 500;
+    transition: color 0.2s;
+  }
+  .nav-links a:hover { color: #fff; }
+  .btn-nav-decode {
+    background: rgba(255, 255, 255, 0.12);
+    backdrop-filter: blur(10px);
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    color: #fff; padding: 9px 20px; border-radius: 30px;
+    font-size: 13.5px; font-weight: 600; cursor: pointer;
+    transition: all 0.2s ease;
+  }
+  .btn-nav-decode:hover {
+    background: rgba(255, 255, 255, 0.22);
+    transform: translateY(-1px);
+  }
 
-    /* ==================== WORKSPACE CONTAINER ==================== */
-    main {
-      flex: 1;
-      max-width: 1080px;
-      width: 100%;
-      margin: 0 auto;
-      padding: 24px 20px 60px;
-    }
+  /* ==================== HERO SECTION ==================== */
+  .hero {
+    background: var(--hero-bg);
+    color: #fff;
+    padding: 140px 24px 90px;
+    text-align: center;
+    position: relative;
+    overflow: hidden;
+  }
+  .hero-glow {
+    position: absolute; top: -100px; left: 50%;
+    transform: translateX(-50%);
+    width: min(700px, 90vw); height: 500px;
+    background: radial-gradient(circle, rgba(99, 102, 241, 0.25) 0%, rgba(0,0,0,0) 70%);
+    pointer-events: none;
+  }
+  .floating-icon {
+    position: absolute; border-radius: 16px;
+    padding: 12px; display: flex; align-items: center; justify-content: center;
+    box-shadow: 0 10px 30px rgba(0,0,0,0.4);
+    animation: floatAnim 6s ease-in-out infinite;
+    pointer-events: none; opacity: 0.85;
+  }
+  .f-ig { top: 140px; left: 8%; width: 54px; height: 54px; background: var(--accent-insta); animation-delay: 0s; }
+  .f-x { top: 250px; left: 6%; width: 48px; height: 48px; background: #000; border: 1px solid rgba(255,255,255,0.2); animation-delay: 1.5s; }
+  .f-tg { top: 130px; right: 9%; width: 52px; height: 52px; background: #229ed9; animation-delay: 2s; }
+  .f-dc { top: 240px; right: 7%; width: 48px; height: 48px; background: #5865f2; animation-delay: 3.5s; }
 
-    /* Segmented Tab Switcher */
-    .mode-switcher {
-      display: flex;
-      background: var(--bg-surface);
-      border: 1px solid var(--border);
-      border-radius: var(--radius-lg);
-      padding: 4px;
-      margin-bottom: 24px;
-      max-width: 440px;
-      margin-left: auto;
-      margin-right: auto;
-    }
-    .mode-tab {
-      flex: 1;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      gap: 8px;
-      padding: 10px 16px;
-      border-radius: var(--radius-md);
-      font-size: 14px;
-      font-weight: 600;
-      color: var(--text-muted);
-      background: transparent;
-      border: none;
-      cursor: pointer;
-      transition: all 0.15s ease;
-      user-select: none;
-    }
-    .mode-tab:hover {
-      color: var(--text);
-    }
-    .mode-tab.active {
-      background: var(--primary);
-      color: #fff;
-      box-shadow: 0 2px 8px rgba(2, 132, 199, 0.4);
-    }
+  @keyframes floatAnim {
+    0%, 100% { transform: translateY(0px) rotate(0deg); }
+    50% { transform: translateY(-14px) rotate(4deg); }
+  }
 
-    /* Workspace Panels */
-    .workspace-card {
-      background: var(--bg-surface);
-      border: 1px solid var(--border);
-      border-radius: var(--radius-lg);
-      padding: 24px;
-      box-shadow: 0 8px 30px rgba(0, 0, 0, 0.25);
-    }
-    @media (min-width: 640px) {
-      .workspace-card { padding: 32px; }
-    }
+  .hero h1 {
+    font-size: clamp(32px, 5vw, 54px);
+    font-weight: 800; line-height: 1.15;
+    letter-spacing: -0.035em; max-width: 860px; margin: 0 auto 20px;
+  }
+  .hero p {
+    font-size: clamp(15px, 2vw, 17.5px);
+    color: #94a3b8; max-width: 640px;
+    margin: 0 auto 36px; font-weight: 400; line-height: 1.6;
+  }
+  .hero-actions {
+    display: flex; gap: 14px; justify-content: center; align-items: center;
+    margin-bottom: 46px; flex-wrap: wrap;
+  }
+  .btn-yellow {
+    background: var(--accent-yellow); color: #000;
+    font-weight: 700; font-size: 15px; padding: 13px 30px;
+    border-radius: 30px; text-decoration: none; border: 0; cursor: pointer;
+    box-shadow: 0 4px 18px rgba(245, 158, 11, 0.4);
+    transition: all 0.2s ease; display: inline-block;
+  }
+  .btn-yellow:hover {
+    background: var(--accent-yellow-hover);
+    transform: translateY(-2px);
+  }
+  .btn-outline {
+    background: rgba(255, 255, 255, 0.08);
+    backdrop-filter: blur(10px);
+    color: #fff; font-weight: 600; font-size: 15px; padding: 13px 28px;
+    border-radius: 30px; text-decoration: none; border: 1px solid rgba(255, 255, 255, 0.25);
+    cursor: pointer; transition: all 0.2s ease; display: inline-block;
+  }
+  .btn-outline:hover {
+    background: rgba(255, 255, 255, 0.16);
+    transform: translateY(-2px);
+  }
 
-    .card-header {
-      margin-bottom: 24px;
-    }
-    .card-title {
-      font-size: 19px;
-      font-weight: 700;
-      letter-spacing: -0.02em;
-      color: var(--text);
-      display: flex;
-      align-items: center;
-      gap: 8px;
-    }
-    .card-desc {
-      font-size: 13.5px;
-      color: var(--text-muted);
-      margin-top: 4px;
-    }
+  .hero-social-proof {
+    display: inline-flex; align-items: center; gap: 14px;
+    background: rgba(255, 255, 255, 0.05);
+    padding: 8px 20px; border-radius: 40px;
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    max-width: 90%;
+  }
+  .proof-avatars { display: flex; flex-shrink: 0; }
+  .avatar-circle {
+    width: 28px; height: 28px; border-radius: 50%;
+    border: 2px solid #0f172a; margin-left: -8px;
+    background-size: cover; background-position: center;
+  }
+  .avatar-circle:first-child { margin-left: 0; }
+  .proof-text { font-size: 13px; font-weight: 600; color: #cbd5e1; }
+  .proof-stars { color: #f59e0b; margin-left: 4px; }
 
-    /* ==================== FORM ELEMENTS ==================== */
-    .form-grid {
-      display: grid;
-      gap: 20px;
-    }
-    .form-group {
-      display: flex;
-      flex-direction: column;
-      gap: 8px;
-    }
-    .form-label {
-      font-size: 13px;
-      font-weight: 600;
-      color: var(--text);
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-    }
-    .form-hint {
-      font-size: 12px;
-      color: var(--text-dim);
-      font-weight: 400;
-    }
+  /* ==================== LOGO BAR ==================== */
+  .logo-bar {
+    background: #ffffff;
+    border-bottom: 1px solid var(--border-light);
+    padding: 20px 24px;
+    display: flex; justify-content: center; align-items: center;
+    gap: clamp(20px, 4vw, 48px); flex-wrap: wrap;
+  }
+  .logo-bar-item {
+    display: flex; align-items: center; gap: 8px;
+    color: #64748b; font-weight: 700; font-size: 14.5px;
+    opacity: 0.85; transition: opacity 0.2s;
+  }
+  .logo-bar-item:hover { opacity: 1; }
 
-    /* Dropzone */
-    .dropzone {
-      border: 2px dashed var(--border);
-      background: var(--bg-card);
-      border-radius: var(--radius-md);
-      padding: 24px 16px;
-      text-align: center;
-      cursor: pointer;
-      transition: all 0.15s ease;
-      position: relative;
-    }
-    .dropzone:hover, .dropzone.dragover {
-      border-color: var(--accent-cyan);
-      background: var(--bg-card-hover);
-    }
-    .dropzone-icon {
-      margin-bottom: 8px;
-      color: var(--accent-cyan);
-    }
-    .dropzone-title {
-      font-size: 14px;
-      font-weight: 600;
-      color: var(--text);
-    }
-    .dropzone-sub {
-      font-size: 12px;
-      color: var(--text-dim);
-      margin-top: 2px;
-    }
-    .file-input { display: none; }
+  /* ==================== MAIN SECTION ==================== */
+  .main-section {
+    max-width: 1140px; margin: 0 auto;
+    padding: 70px 24px 100px;
+  }
+  .section-header { margin-bottom: 36px; }
+  .section-tag {
+    color: var(--primary-light); font-weight: 700; font-size: 13px;
+    text-transform: uppercase; letter-spacing: 0.08em; margin-bottom: 6px;
+  }
+  .section-title {
+    font-size: clamp(26px, 4vw, 34px); font-weight: 800; letter-spacing: -0.03em;
+    color: var(--text-dark);
+  }
 
-    /* Selected File Meta */
-    .file-meta-bar {
-      display: none;
-      align-items: center;
-      justify-content: space-between;
-      background: var(--bg-card);
-      border: 1px solid var(--border);
-      padding: 10px 14px;
-      border-radius: var(--radius-md);
-      font-size: 13px;
-      margin-top: 8px;
-    }
-    .file-meta-bar.show { display: flex; }
-    .file-meta-info {
-      display: flex;
-      align-items: center;
-      gap: 10px;
-      overflow: hidden;
-    }
-    .file-thumb {
-      width: 32px;
-      height: 32px;
-      border-radius: 4px;
-      object-fit: cover;
-      background: #000;
-      border: 1px solid var(--border);
-    }
-    .file-name {
-      font-weight: 600;
-      color: var(--text);
-      white-space: nowrap;
-      overflow: hidden;
-      text-overflow: ellipsis;
-      max-width: 240px;
-    }
-    .file-size {
-      font-size: 12px;
-      color: var(--text-dim);
-      font-family: var(--font-mono);
-    }
-    .btn-clear-file {
-      background: transparent;
-      border: none;
-      color: var(--text-dim);
-      cursor: pointer;
-      padding: 4px;
-      font-size: 16px;
-      line-height: 1;
-    }
-    .btn-clear-file:hover { color: var(--accent-rose); }
+  /* ==================== CARDS GRID ==================== */
+  .tools-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+    gap: 20px;
+  }
+  .tool-card {
+    background: var(--card-bg);
+    border: 1px solid var(--border-light);
+    border-radius: 18px; padding: 24px;
+    cursor: pointer; transition: all 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+    display: flex; flex-direction: column; justify-content: space-between;
+    box-shadow: 0 4px 12px rgba(15, 23, 42, 0.03);
+    position: relative; overflow: hidden;
+  }
+  .tool-card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 16px 32px rgba(99, 102, 241, 0.12);
+    border-color: #cbd5e1;
+  }
+  .card-top {
+    display: flex; justify-content: space-between; align-items: center;
+    margin-bottom: 20px;
+  }
+  .card-icon {
+    width: 48px; height: 48px; border-radius: 12px;
+    display: flex; align-items: center; justify-content: center;
+    box-shadow: 0 6px 14px rgba(0,0,0,0.1); flex-shrink: 0;
+  }
+  .card-icon svg, .floating-icon svg, .logo-bar-item svg {
+    display: block; flex-shrink: 0;
+  }
+  .card-arrow {
+    width: 32px; height: 32px; border-radius: 50%;
+    background: #f1f5f9; display: flex; align-items: center;
+    justify-content: center; color: #475569; transition: all 0.2s;
+  }
+  .tool-card:hover .card-arrow {
+    background: var(--primary); color: #fff;
+    transform: translateX(3px);
+  }
+  .card-title {
+    font-size: 17.5px; font-weight: 700; margin-bottom: 8px;
+    color: var(--text-dark); letter-spacing: -0.015em;
+  }
+  .card-desc {
+    font-size: 13.5px; color: var(--text-muted); line-height: 1.55;
+  }
+  .card-meta {
+    margin-top: 18px; padding-top: 14px;
+    border-top: 1px solid #f1f5f9;
+    font-size: 12px; font-weight: 600; color: #6366f1;
+    display: flex; justify-content: space-between; flex-wrap: wrap; gap: 4px;
+  }
 
-    /* Platform Grid (Thumb-Friendly Pills) */
-    .platform-selector {
-      display: grid;
-      grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
-      gap: 10px;
-    }
-    .platform-option {
-      background: var(--bg-card);
-      border: 1px solid var(--border);
-      border-radius: var(--radius-md);
-      padding: 10px 12px;
-      cursor: pointer;
-      transition: all 0.15s ease;
-      display: flex;
-      flex-direction: column;
-      gap: 4px;
-      text-align: left;
-      min-height: 60px;
-    }
-    .platform-option:hover {
-      border-color: var(--border-focus);
-      background: var(--bg-card-hover);
-    }
-    .platform-option.selected {
-      border-color: var(--accent-cyan);
-      background: rgba(56, 189, 248, 0.08);
-      box-shadow: 0 0 0 1px var(--accent-cyan);
-    }
-    .p-title {
-      font-size: 13px;
-      font-weight: 600;
-      color: var(--text);
-      display: flex;
-      align-items: center;
-      gap: 6px;
-    }
-    .p-spec {
-      font-size: 11px;
-      font-family: var(--font-mono);
-      color: var(--text-dim);
-    }
-    .platform-option.selected .p-spec {
-      color: var(--accent-cyan);
-    }
+  /* ==================== HOW IT WORKS ==================== */
+  .how-it-works-section {
+    margin-top: 70px; padding: 48px 36px;
+    background: #ffffff; border-radius: 24px;
+    border: 1px solid var(--border-light);
+    box-shadow: 0 4px 20px rgba(15, 23, 42, 0.03);
+  }
+  .hiw-grid {
+    display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+    gap: 24px; margin-top: 28px;
+  }
+  .hiw-step {
+    border-left: 3px solid var(--primary-light);
+    padding-left: 16px;
+  }
+  .hiw-step h4 {
+    font-size: 15px; font-weight: 700; color: var(--text-dark); margin-bottom: 4px;
+  }
+  .hiw-step p {
+    font-size: 13px; color: var(--text-muted); line-height: 1.5;
+  }
 
-    /* Inputs */
-    .text-input, .textarea-input {
-      width: 100%;
-      background: var(--bg-card);
-      border: 1px solid var(--border);
-      border-radius: var(--radius-md);
-      color: var(--text);
-      font-family: var(--font-sans);
-      font-size: 14.5px;
-      padding: 10px 14px;
-      outline: none;
-      transition: border-color 0.15s ease;
-    }
-    .textarea-input {
-      font-family: var(--font-mono);
-      font-size: 13.5px;
-      min-height: 110px;
-      resize: vertical;
-      line-height: 1.5;
-    }
-    .text-input:focus, .textarea-input:focus {
-      border-color: var(--accent-cyan);
-      box-shadow: 0 0 0 1px var(--accent-cyan);
-    }
+  /* ==================== UNIVERSAL DECODE BANNER ==================== */
+  .decode-banner {
+    margin-top: 40px;
+    background: linear-gradient(135deg, #1e1b4b, #312e81);
+    color: #fff; border-radius: 24px; padding: clamp(28px, 4vw, 44px);
+    display: flex; justify-content: space-between; align-items: center;
+    gap: 24px; box-shadow: 0 16px 40px rgba(49, 46, 129, 0.25);
+    flex-wrap: wrap;
+  }
+  .decode-banner h3 {
+    font-size: clamp(22px, 3vw, 28px); font-weight: 800; letter-spacing: -0.02em; margin-bottom: 8px;
+  }
+  .decode-banner p {
+    color: #cbd5e1; font-size: 14.5px; max-width: 580px; line-height: 1.55;
+  }
+  .btn-decode-banner {
+    background: #fff; color: var(--primary-dark);
+    font-weight: 700; font-size: 15px; padding: 14px 34px;
+    border-radius: 30px; border: 0; cursor: pointer;
+    box-shadow: 0 6px 20px rgba(0,0,0,0.2); transition: all 0.2s;
+    white-space: nowrap; flex-shrink: 0;
+  }
+  .btn-decode-banner:hover {
+    background: #f8fafc; transform: translateY(-2px);
+  }
 
-    /* Capacity Progress Bar */
-    .capacity-bar-wrap {
-      display: flex;
-      flex-direction: column;
-      gap: 4px;
-      margin-top: 4px;
-    }
-    .capacity-track {
-      height: 5px;
-      background: var(--border);
-      border-radius: 4px;
-      overflow: hidden;
-    }
-    .capacity-fill {
-      height: 100%;
-      width: 0%;
-      background: var(--accent-cyan);
-      transition: width 0.2s ease, background-color 0.2s ease;
-    }
-    .capacity-fill.warn { background: var(--accent-amber); }
-    .capacity-fill.danger { background: var(--accent-rose); }
-    .capacity-text {
-      font-size: 11.5px;
-      font-family: var(--font-mono);
-      color: var(--text-dim);
-      display: flex;
-      justify-content: space-between;
-    }
+  /* ==================== MODAL & DRAWER ==================== */
+  .modal-overlay {
+    position: fixed; inset: 0; background: rgba(15, 23, 42, 0.7);
+    backdrop-filter: blur(8px); display: none; justify-content: center;
+    align-items: center; z-index: 100; padding: 16px;
+  }
+  .modal-overlay.active { display: flex; }
+  .modal-box {
+    background: #ffffff; border-radius: 24px; width: 100%;
+    max-width: 560px; padding: clamp(24px, 5vw, 36px); position: relative;
+    box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25);
+    animation: modalIn 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+    max-height: 90vh; overflow-y: auto;
+  }
+  @keyframes modalIn {
+    from { opacity: 0; transform: scale(0.96) translateY(8px); }
+    to { opacity: 1; transform: scale(1) translateY(0); }
+  }
+  .modal-close {
+    position: absolute; top: 20px; right: 20px;
+    background: #f1f5f9; border: 0; width: 34px; height: 34px;
+    border-radius: 50%; font-size: 18px; cursor: pointer; color: #64748b;
+    display: flex; align-items: center; justify-content: center;
+    transition: all 0.2s;
+  }
+  .modal-close:hover { background: #e2e8f0; color: #0f172a; }
 
-    /* Advanced Accordion */
-    details.advanced-drawer {
-      background: var(--bg-card);
-      border: 1px solid var(--border);
-      border-radius: var(--radius-md);
-      overflow: hidden;
-    }
-    details.advanced-drawer summary {
-      padding: 12px 14px;
-      font-size: 13px;
-      font-weight: 600;
-      color: var(--text-muted);
-      cursor: pointer;
-      user-select: none;
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-    }
-    details.advanced-drawer summary:hover { color: var(--text); }
-    .drawer-content {
-      padding: 14px;
-      border-top: 1px solid var(--border);
-      font-size: 12.5px;
-      color: var(--text-muted);
-      display: grid;
-      gap: 12px;
-    }
-    .spec-table {
-      width: 100%;
-      border-collapse: collapse;
-    }
-    .spec-table td {
-      padding: 6px 0;
-      border-bottom: 1px solid rgba(255, 255, 255, 0.05);
-    }
-    .spec-table td:last-child {
-      text-align: right;
-      font-family: var(--font-mono);
-      color: var(--text);
-    }
+  .modal-header { margin-bottom: 22px; padding-right: 30px; }
+  .modal-badge {
+    display: inline-block; font-size: 11px; font-weight: 700;
+    text-transform: uppercase; letter-spacing: 0.08em;
+    padding: 3px 10px; border-radius: 20px; margin-bottom: 8px;
+  }
+  .modal-title { font-size: clamp(20px, 3.5vw, 24px); font-weight: 800; letter-spacing: -0.02em; }
+  .modal-subtitle { font-size: 13px; color: var(--text-muted); margin-top: 4px; }
 
-    /* Action Buttons */
-    .btn-action {
-      background: var(--primary);
-      color: #fff;
-      font-size: 14.5px;
-      font-weight: 600;
-      border: none;
-      border-radius: var(--radius-md);
-      padding: 13px 20px;
-      cursor: pointer;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      gap: 8px;
-      transition: all 0.15s ease;
-      min-height: 48px;
-      width: 100%;
-    }
-    .btn-action:hover {
-      background: var(--primary-hover);
-    }
-    .btn-action:disabled {
-      opacity: 0.5;
-      cursor: not-allowed;
-    }
+  /* Form Elements */
+  .form-group { margin-bottom: 16px; }
+  .form-label {
+    display: block; font-size: 13px; font-weight: 600;
+    color: var(--text-dark); margin-bottom: 6px;
+  }
+  .file-dropzone {
+    border: 2px dashed #cbd5e1; border-radius: 14px;
+    padding: 20px 16px; text-align: center; cursor: pointer;
+    background: #f8fafc; transition: all 0.2s;
+  }
+  .file-dropzone:hover {
+    border-color: var(--primary-light); background: #f1f5f9;
+  }
+  .dropzone-text { font-size: 13.5px; font-weight: 600; color: #334155; word-break: break-all; }
+  .dropzone-sub { font-size: 11.5px; color: #94a3b8; margin-top: 4px; }
+  input[type="file"] { display: none; }
 
-    /* Processing Indicator (Clean & Functional) */
-    .processing-indicator {
-      display: none;
-      flex-direction: column;
-      gap: 10px;
-      background: var(--bg-card);
-      border: 1px solid var(--border);
-      padding: 16px;
-      border-radius: var(--radius-md);
-      margin-top: 16px;
-    }
-    .processing-indicator.show { display: flex; }
-    .proc-header {
-      display: flex;
-      align-items: center;
-      gap: 10px;
-      font-size: 13.5px;
-      font-weight: 600;
-      color: var(--accent-cyan);
-    }
-    .spinner {
-      width: 16px;
-      height: 16px;
-      border: 2px solid rgba(56, 189, 248, 0.3);
-      border-top-color: var(--accent-cyan);
-      border-radius: 50%;
-      animation: spin 0.8s linear infinite;
-    }
-    @keyframes spin { to { transform: rotate(360deg); } }
-    .proc-bar {
-      height: 4px;
-      background: var(--border);
-      border-radius: 2px;
-      overflow: hidden;
-    }
-    .proc-fill {
-      height: 100%;
-      width: 0%;
-      background: var(--accent-cyan);
-      transition: width 0.3s ease;
-    }
-    .proc-status {
-      font-size: 12px;
-      font-family: var(--font-mono);
-      color: var(--text-dim);
-    }
+  textarea, input[type="password"] {
+    width: 100%; border: 1px solid var(--border-light);
+    border-radius: 12px; padding: 12px 14px; font-family: inherit;
+    font-size: 14px; outline: none; background: #f8fafc; transition: all 0.2s;
+  }
+  textarea:focus, input[type="password"]:focus {
+    border-color: var(--primary-light); background: #fff;
+    box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.12);
+  }
+  textarea { min-height: 80px; resize: vertical; }
 
-    /* Result State Card */
-    .result-card {
-      display: none;
-      margin-top: 20px;
-      border-radius: var(--radius-md);
-      padding: 18px;
-      animation: fadeIn 0.2s ease;
-    }
-    .result-card.show { display: block; }
-    @keyframes fadeIn { from { opacity: 0; transform: translateY(4px); } to { opacity: 1; transform: translateY(0); } }
+  .btn-submit {
+    width: 100%; background: var(--primary); color: #fff;
+    border: 0; border-radius: 12px; padding: 14px;
+    font-size: 15px; font-weight: 700; cursor: pointer;
+    box-shadow: 0 4px 14px rgba(67, 56, 202, 0.3);
+    transition: all 0.2s; margin-top: 10px;
+  }
+  .btn-submit:hover { background: var(--primary-dark); }
+  .btn-submit:disabled { opacity: 0.5; cursor: not-allowed; }
 
-    .result-card.success {
-      background: rgba(16, 185, 129, 0.08);
-      border: 1px solid rgba(16, 185, 129, 0.3);
-    }
-    .result-card.error {
-      background: rgba(244, 63, 94, 0.08);
-      border: 1px solid rgba(244, 63, 94, 0.3);
-    }
-    .result-header {
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      margin-bottom: 12px;
-    }
-    .res-badge {
-      font-size: 11px;
-      font-family: var(--font-mono);
-      font-weight: 600;
-      text-transform: uppercase;
-      padding: 2px 8px;
-      border-radius: 4px;
-    }
-    .success .res-badge { background: rgba(16, 185, 129, 0.2); color: var(--accent-emerald); }
-    .error .res-badge { background: rgba(244, 63, 94, 0.2); color: var(--accent-rose); }
+  /* ==================== SCANNER / RADAR ANIMATION ==================== */
+  .scanner-overlay {
+    display: none; flex-direction: column; align-items: center;
+    justify-content: center; padding: 30px 10px; text-align: center;
+  }
+  .scanner-overlay.active { display: flex; }
 
-    .recovered-message-box {
-      background: #000;
-      border: 1px solid var(--border);
-      border-radius: var(--radius-sm);
-      padding: 12px;
-      font-family: var(--font-mono);
-      font-size: 13.5px;
-      color: #38bdf8;
-      white-space: pre-wrap;
-      word-break: break-all;
-      max-height: 250px;
-      overflow-y: auto;
-      margin-bottom: 12px;
-    }
-    .btn-secondary {
-      background: var(--bg-card);
-      color: var(--text);
-      border: 1px solid var(--border);
-      border-radius: var(--radius-md);
-      padding: 9px 14px;
-      font-size: 13px;
-      font-weight: 600;
-      cursor: pointer;
-      display: inline-flex;
-      align-items: center;
-      gap: 6px;
-      text-decoration: none;
-      transition: all 0.15s ease;
-    }
-    .btn-secondary:hover {
-      border-color: var(--accent-cyan);
-      background: var(--bg-card-hover);
-    }
+  .radar-container {
+    position: relative; width: 120px; height: 120px;
+    margin-bottom: 20px;
+  }
+  .radar-ring {
+    position: absolute; inset: 0; border-radius: 50%;
+    border: 2px solid rgba(99, 102, 241, 0.2);
+  }
+  .radar-ring.pulse {
+    animation: ringPulse 2s cubic-bezier(0.215, 0.61, 0.355, 1) infinite;
+  }
+  .radar-ring.pulse-delayed {
+    animation: ringPulse 2s cubic-bezier(0.215, 0.61, 0.355, 1) infinite;
+    animation-delay: 0.6s;
+  }
+  @keyframes ringPulse {
+    0% { transform: scale(0.6); opacity: 1; border-color: rgba(99, 102, 241, 0.8); }
+    100% { transform: scale(1.4); opacity: 0; border-color: rgba(168, 85, 247, 0); }
+  }
+  .radar-core {
+    position: absolute; top: 50%; left: 50%;
+    transform: translate(-50%, -50%);
+    width: 56px; height: 56px; border-radius: 50%;
+    background: linear-gradient(135deg, #4338ca, #6366f1);
+    box-shadow: 0 0 25px rgba(99, 102, 241, 0.6);
+    display: flex; align-items: center; justify-content: center;
+    color: #fff; animation: coreRotate 3s linear infinite;
+  }
+  @keyframes coreRotate {
+    0% { transform: translate(-50%, -50%) rotate(0deg); }
+    100% { transform: translate(-50%, -50%) rotate(360deg); }
+  }
 
-    /* ==================== BENCHMARK & REFERENCE SECTION ==================== */
-    .reference-section {
-      margin-top: 50px;
-      border-top: 1px solid var(--border);
-      padding-top: 40px;
-    }
-    .ref-header {
-      margin-bottom: 20px;
-    }
-    .ref-title {
-      font-size: 18px;
-      font-weight: 700;
-      color: var(--text);
-    }
-    .ref-desc {
-      font-size: 13px;
-      color: var(--text-dim);
-      margin-top: 2px;
-    }
+  .anim-title {
+    font-size: 16.5px; font-weight: 700; color: var(--text-dark);
+    margin-bottom: 6px; letter-spacing: -0.01em;
+  }
+  .anim-step {
+    font-family: var(--font-mono); font-size: 12px;
+    color: var(--primary-light); font-weight: 500; min-height: 20px;
+    word-break: break-word; max-width: 90%; margin: 0 auto;
+  }
+  .anim-progress-bar {
+    width: min(240px, 80%); height: 5px; background: #e2e8f0;
+    border-radius: 10px; margin: 16px auto 0; overflow: hidden;
+  }
+  .anim-progress-fill {
+    height: 100%; width: 0%;
+    background: linear-gradient(90deg, #4338ca, #a855f7);
+    border-radius: 10px; transition: width 0.3s ease;
+  }
 
-    .table-container {
-      overflow-x: auto;
-      border: 1px solid var(--border);
-      border-radius: var(--radius-md);
-      background: var(--bg-surface);
-      margin-bottom: 24px;
-    }
-    .data-table {
-      width: 100%;
-      border-collapse: collapse;
-      font-size: 13px;
-      text-align: left;
-    }
-    .data-table th, .data-table td {
-      padding: 10px 14px;
-      border-bottom: 1px solid var(--border);
-      white-space: nowrap;
-    }
-    .data-table th {
-      background: var(--bg-card);
-      color: var(--text-muted);
-      font-weight: 600;
-      font-size: 12px;
-      text-transform: uppercase;
-      letter-spacing: 0.03em;
-    }
-    .data-table tr:last-child td { border-bottom: none; }
-    .rate-pill {
-      font-family: var(--font-mono);
-      font-weight: 600;
-      font-size: 12px;
-    }
-    .rate-100 { color: var(--accent-emerald); }
-    .rate-80 { color: #60a5fa; }
-    .rate-0 { color: var(--text-dim); }
+  /* Result Box */
+  .result-box {
+    margin-top: 18px; padding: 18px; border-radius: 14px;
+    display: none; animation: modalIn 0.3s ease;
+  }
+  .result-box.show { display: block; }
+  .result-box.success {
+    background: #ecfdf5; border: 1px solid #a7f3d0; color: #065f46;
+  }
+  .result-box.error {
+    background: #fff1f2; border: 1px solid #fecdd3; color: #9f1239;
+  }
+  .res-tag {
+    font-size: 11px; font-weight: 700; text-transform: uppercase;
+    letter-spacing: 0.08em; padding: 2px 8px; border-radius: 4px;
+    background: rgba(0,0,0,0.06); display: inline-block; margin-bottom: 8px;
+  }
+  .res-content {
+    font-family: var(--font-mono); font-size: 13.5px;
+    white-space: pre-wrap; word-break: break-all; margin-top: 6px;
+    background: rgba(255,255,255,0.85); padding: 12px; border-radius: 8px;
+    color: #0f172a; border: 1px solid #cbd5e1;
+  }
+  .btn-dl {
+    display: inline-flex; align-items: center; gap: 8px;
+    background: #059669; color: #fff; text-decoration: none;
+    font-weight: 700; font-size: 13.5px; padding: 11px 22px;
+    border-radius: 8px; margin-top: 14px; box-shadow: 0 4px 12px rgba(5, 150, 105, 0.3);
+  }
+  .btn-dl:hover { background: #047857; }
 
-    .tech-grid {
-      display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
-      gap: 16px;
-    }
-    .tech-box {
-      background: var(--bg-surface);
-      border: 1px solid var(--border);
-      border-radius: var(--radius-md);
-      padding: 16px;
-    }
-    .tech-box h4 {
-      font-size: 13.5px;
-      font-weight: 600;
-      color: var(--text);
-      margin-bottom: 6px;
-      display: flex;
-      align-items: center;
-      gap: 6px;
-    }
-    .tech-box p {
-      font-size: 12.5px;
-      color: var(--text-muted);
-      line-height: 1.5;
-    }
+  footer {
+    border-top: 1px solid var(--border-light);
+    padding: 30px 20px; text-align: center;
+    color: var(--text-muted); font-size: 13px;
+  }
 
-    footer {
-      border-top: 1px solid var(--border);
-      background: var(--bg-surface);
-      padding: 24px 20px;
-      text-align: center;
-      font-size: 12.5px;
-      color: var(--text-dim);
-    }
-    footer a { color: var(--text-muted); text-decoration: none; }
-    footer a:hover { color: var(--accent-cyan); }
-  </style>
+  /* ==================== RESPONSIVE MEDIA QUERIES ==================== */
+  @media (max-width: 900px) {
+    nav { padding: 18px 24px; }
+    .nav-links { display: none; } /* Kept clean for mobile; decode button is in hero */
+    .floating-icon { display: none; } /* Remove clutter on tablet/mobile */
+    .hero { padding: 110px 20px 70px; }
+  }
+
+  @media (max-width: 600px) {
+    .btn-decode-banner { width: 100%; text-align: center; }
+    .logo-bar { gap: 16px; justify-content: space-around; }
+    .logo-bar-item { font-size: 13px; }
+    .hero-actions { flex-direction: column; width: 100%; }
+    .btn-yellow, .btn-outline { width: 100%; text-align: center; }
+    .how-it-works-section { padding: 28px 20px; }
+  }
+</style>
 </head>
 <body>
 
-  <!-- ==================== HEADER ==================== -->
-  <header>
-    <div class="header-inner">
-      <a href="/" class="brand">
-        <img src="docs/logo.png" alt="ShadowPost Logo" class="brand-logo">
-        <div class="brand-text">
-          <div class="brand-title">
-            ShadowPost
-            <span class="brand-tag">v2.4</span>
-          </div>
-          <span class="brand-subtitle">Native-JPEG Frequency Steganography</span>
-        </div>
-      </a>
-      <div class="header-actions">
-        <span class="status-pill" id="backend-status">
-          <span class="status-dot"></span> API Online
-        </span>
-        <a href="/paper" class="nav-link" target="_blank">
-          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/><polyline points="10 9 9 9 8 9"/></svg>
-          Paper
-        </a>
+  <!-- ==================== NAVIGATION ==================== -->
+  <nav>
+    <a href="#" class="nav-logo">
+      <img src="docs/logo.png" onerror="this.onerror=null; this.src='logo.png'" alt="ShadowPost Logo" class="nav-logo-icon" style="width: 36px; height: 36px; border-radius: 10px; object-fit: cover; border: 1px solid rgba(255,255,255,0.25);">
+      ShadowPost
+    </a>
+    <ul class="nav-links">
+      <li><a href="#how-it-works">How It Works</a></li>
+      <li><button class="btn-nav-decode" onclick="openDecodeModal()">Universal Decoder</button></li>
+    </ul>
+  </nav>
+
+  <!-- ==================== HERO SECTION ==================== -->
+  <header class="hero">
+    <div class="hero-glow"></div>
+
+    <!-- Floating Platform Icons -->
+    <div class="floating-icon f-ig">
+      <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="#ffffff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <rect x="2" y="2" width="20" height="20" rx="5" ry="5"></rect>
+        <path d="M16 11.37A4 4 0 1 1 12.63 8 4 4 0 0 1 16 11.37z"></path>
+        <line x1="17.5" y1="6.5" x2="17.51" y2="6.5"></line>
+      </svg>
+    </div>
+    <div class="floating-icon f-x">
+      <svg width="22" height="22" viewBox="0 0 24 24" fill="#ffffff">
+        <path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z"/>
+      </svg>
+    </div>
+    <div class="floating-icon f-tg">
+      <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="#ffffff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <line x1="22" y1="2" x2="11" y2="13"></line>
+        <polygon points="22 2 15 22 11 13 2 9 22 2"></polygon>
+      </svg>
+    </div>
+    <div class="floating-icon f-dc">
+      <svg width="26" height="26" viewBox="0 0 24 24" fill="#ffffff">
+        <path d="M20.317 4.37a19.791 19.791 0 0 0-4.885-1.515.074.074 0 0 0-.079.037c-.21.375-.444.864-.608 1.25a18.27 18.27 0 0 0-5.487 0 12.64 12.64 0 0 0-.617-1.25.077.077 0 0 0-.079-.037A19.736 19.736 0 0 0 3.677 4.37a.07.07 0 0 0-.032.027C.533 9.046-.32 13.58.099 18.057a.082.082 0 0 0 .031.057 19.9 19.9 0 0 0 5.993 3.03.078.078 0 0 0 .084-.028c.462-.63.874-1.295 1.226-1.994.021-.041.001-.09-.041-.106a13.107 13.107 0 0 1-1.872-.892.077.077 0 0 1-.008-.128 10.2 10.2 0 0 0 .372-.292.074.074 0 0 1 .077-.01c3.929 1.793 8.18 1.793 12.061 0a.074.074 0 0 1 .078.01c.12.098.246.198.373.292a.077.077 0 0 1-.006.127 12.299 12.299 0 0 1-1.873.894.077.077 0 0 0-.041.107c.36.698.772 1.362 1.225 1.993a.076.076 0 0 0 .084.028 19.839 19.839 0 0 0 6.002-3.03.077.077 0 0 0 .032-.054c.5-5.177-.838-9.674-3.549-13.66a.061.061 0 0 0-.031-.028zM8.02 15.33c-1.183 0-2.157-1.085-2.157-2.419 0-1.333.956-2.419 2.157-2.419 1.21 0 2.176 1.096 2.157 2.42 0 1.333-.956 2.418-2.157 2.418zm7.975 0c-1.183 0-2.157-1.085-2.157-2.419 0-1.333.955-2.419 2.157-2.419 1.21 0 2.176 1.096 2.157 2.42 0 1.333-.946 2.418-2.157 2.418z"/>
+      </svg>
+    </div>
+
+    <h1>Encode, Transmit & Protect Secret Data Across Social Media</h1>
+    <p>The world's first adaptive native-JPEG DCT steganography engine that pre-conditions images to survive social media recompression, resizing, and transcoding.</p>
+
+    <div class="hero-actions">
+      <a href="#channels" class="btn-yellow">Start Encoding</a>
+      <button class="btn-outline" onclick="openDecodeModal()">Universal Decoder</button>
+    </div>
+
+    <div class="hero-social-proof">
+      <div class="proof-avatars">
+        <div class="avatar-circle" style="background-image:url('https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=60&h=60&fit=crop');"></div>
+        <div class="avatar-circle" style="background-image:url('https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=60&h=60&fit=crop');"></div>
+        <div class="avatar-circle" style="background-image:url('https://images.unsplash.com/photo-1494790108377-be9c29b29330?w=60&h=60&fit=crop');"></div>
+      </div>
+      <div class="proof-text">
+        270 Empirical Trials &middot; <strong>4.9/5</strong> Reliability <span class="proof-stars">★★★★★</span>
       </div>
     </div>
   </header>
 
-  <!-- ==================== MAIN WORKSPACE ==================== -->
-  <main>
-    <!-- Segmented Mode Control -->
-    <div class="mode-switcher">
-      <button class="mode-tab active" id="tab-encode" onclick="switchMode('encode')">
-        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
-        Encode & Conceal
-      </button>
-      <button class="mode-tab" id="tab-decode" onclick="switchMode('decode')">
-        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0 1 9.9-1"/></svg>
-        Decode & Extract
-      </button>
+  <!-- ==================== PLATFORM BAR ==================== -->
+  <div class="logo-bar">
+    <div class="logo-bar-item">
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#E1306C" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <rect x="2" y="2" width="20" height="20" rx="5" ry="5"></rect>
+        <path d="M16 11.37A4 4 0 1 1 12.63 8 4 4 0 0 1 16 11.37z"></path>
+        <line x1="17.5" y1="6.5" x2="17.51" y2="6.5"></line>
+      </svg>
+      Instagram Feed
+    </div>
+    <div class="logo-bar-item">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="#000">
+        <path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z"/>
+      </svg>
+      Twitter / X Posts
+    </div>
+    <div class="logo-bar-item">
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#229ed9" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <line x1="22" y1="2" x2="11" y2="13"></line>
+        <polygon points="22 2 15 22 11 13 2 9 22 2"></polygon>
+      </svg>
+      Telegram Photo
+    </div>
+    <div class="logo-bar-item">
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="#5865F2">
+        <path d="M20.317 4.37a19.791 19.791 0 0 0-4.885-1.515.074.074 0 0 0-.079.037c-.21.375-.444.864-.608 1.25a18.27 18.27 0 0 0-5.487 0 12.64 12.64 0 0 0-.617-1.25.077.077 0 0 0-.079-.037A19.736 19.736 0 0 0 3.677 4.37a.07.07 0 0 0-.032.027C.533 9.046-.32 13.58.099 18.057a.082.082 0 0 0 .031.057 19.9 19.9 0 0 0 5.993 3.03.078.078 0 0 0 .084-.028c.462-.63.874-1.295 1.226-1.994.021-.041.001-.09-.041-.106a13.107 13.107 0 0 1-1.872-.892.077.077 0 0 1-.008-.128 10.2 10.2 0 0 0 .372-.292.074.074 0 0 1 .077-.01c3.929 1.793 8.18 1.793 12.061 0a.074.074 0 0 1 .078.01c.12.098.246.198.373.292a.077.077 0 0 1-.006.127 12.299 12.299 0 0 1-1.873.894.077.077 0 0 0-.041.107c.36.698.772 1.362 1.225 1.993a.076.076 0 0 0 .084.028 19.839 19.839 0 0 0 6.002-3.03.077.077 0 0 0 .032-.054c.5-5.177-.838-9.674-3.549-13.66a.061.061 0 0 0-.031-.028zM8.02 15.33c-1.183 0-2.157-1.085-2.157-2.419 0-1.333.956-2.419 2.157-2.419 1.21 0 2.176 1.096 2.157 2.42 0 1.333-.956 2.418-2.157 2.418zm7.975 0c-1.183 0-2.157-1.085-2.157-2.419 0-1.333.955-2.419 2.157-2.419 1.21 0 2.176 1.096 2.157 2.42 0 1.333-.946 2.418-2.157 2.418z"/>
+      </svg>
+      Discord Attachments
+    </div>
+    <div class="logo-bar-item">
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="#25D366">
+        <path d="M12.004 2C6.48 2 2 6.48 2 12.004c0 1.996.59 3.86 1.614 5.43L2.09 21.91a.5.5 0 0 0 .61.61l4.475-1.523A9.957 9.957 0 0 0 12.004 22c5.523 0 10.004-4.48 10.004-9.996C22.008 6.48 17.527 2 12.004 2zm5.72 14.137c-.24.673-1.19 1.233-1.956 1.398-.523.112-1.208.2-3.513-.755-2.946-1.22-4.846-4.225-4.994-4.42-.144-.196-1.187-1.58-1.187-3.013 0-1.434.75-2.14 1.018-2.433.267-.293.585-.367.78-.367.195 0 .39.002.56.01.18.01.423-.069.661.503.244.586.83 2.025.903 2.171.073.147.122.317.024.513-.097.195-.146.317-.292.488-.146.17-.308.38-.44.51-.146.147-.3.308-.13.598.17.293.757 1.246 1.624 2.018 1.116.994 2.057 1.302 2.35 1.449.293.146.463.122.634-.073.17-.196.732-.854.927-1.147.195-.293.39-.244.658-.146.269.097 1.708.805 2.001.952.293.146.488.22.561.341.073.122.073.708-.167 1.381z"/>
+      </svg>
+      WhatsApp Document
+    </div>
+  </div>
+
+  <!-- ==================== MAIN TOOLS GRID ==================== -->
+  <main class="main-section" id="channels">
+    <div class="section-header">
+      <div class="section-tag">Transmission Profiles</div>
+      <h2 class="section-title">Most Popular Steganography Tools</h2>
     </div>
 
-    <!-- ==================== ENCODE PANEL ==================== -->
-    <section class="workspace-card" id="panel-encode">
-      <div class="card-header">
-        <h2 class="card-title">
-          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="var(--accent-cyan)" stroke-width="2"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
-          Conceal Secret into Native JPEG
-        </h2>
-        <p class="card-desc">Embeds payload into quantized DCT frequency coefficients with AES-256-GCM encryption and Reed-Solomon RS(48,32) error recovery.</p>
+    <div class="tools-grid">
+      <!-- Card 1: Instagram -->
+      <div class="tool-card" onclick="openEncodeModal('instagram')">
+        <div>
+          <div class="card-top">
+            <div class="card-icon" style="background: var(--accent-insta);">
+              <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="#ffffff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <rect x="2" y="2" width="20" height="20" rx="5" ry="5"></rect>
+                <path d="M16 11.37A4 4 0 1 1 12.63 8 4 4 0 0 1 16 11.37z"></path>
+                <line x1="17.5" y1="6.5" x2="17.51" y2="6.5"></line>
+              </svg>
+            </div>
+            <div class="card-arrow">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
+            </div>
+          </div>
+          <h3 class="card-title">Instagram Post</h3>
+          <p class="card-desc">Auto-crops to 1080x1080 square canvas with Gap=36 to withstand Meta's aggressive recompression pipeline.</p>
+        </div>
+        <div class="card-meta">
+          <span>Target: 1080x1080</span>
+          <span>Gap: 36 (High)</span>
+        </div>
       </div>
 
-      <form id="form-encode" class="form-grid">
-        <!-- 1. Cover Image Dropzone -->
-        <div class="form-group">
-          <label class="form-label">
-            <span>1. Cover Image (JPEG)</span>
-            <span class="form-hint" id="cover-specs">Standard JPEG baseline</span>
-          </label>
-          <div class="dropzone" id="encode-dropzone" onclick="document.getElementById('enc-file-input').click()">
-            <div class="dropzone-icon">
-              <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="3" y="3" width="18" height="18" rx="2" ry="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/></svg>
+      <!-- Card 2: Twitter / X -->
+      <div class="tool-card" onclick="openEncodeModal('twitter')">
+        <div>
+          <div class="card-top">
+            <div class="card-icon" style="background: #000; border: 1px solid #334155;">
+              <svg width="22" height="22" viewBox="0 0 24 24" fill="#ffffff">
+                <path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z"/>
+              </svg>
             </div>
-            <div class="dropzone-title">Click to select cover or drag & drop</div>
-            <div class="dropzone-sub">Supports .jpg, .jpeg images (Max 25MB)</div>
-          </div>
-          <input type="file" id="enc-file-input" class="file-input" accept="image/jpeg,.jpg,.jpeg">
-          
-          <div class="file-meta-bar" id="enc-file-meta">
-            <div class="file-meta-info">
-              <img id="enc-thumb" class="file-thumb" alt="Thumbnail">
-              <div>
-                <div class="file-name" id="enc-file-name">cover.jpg</div>
-                <div class="file-size" id="enc-file-size">0 KB</div>
-              </div>
-            </div>
-            <button type="button" class="btn-clear-file" onclick="clearFile('enc')" title="Remove file">&times;</button>
-          </div>
-        </div>
-
-        <!-- 2. Target Platform Profile -->
-        <div class="form-group">
-          <label class="form-label">
-            <span>2. Delivery Channel Profile</span>
-            <span class="form-hint">Adjusts canvas snapping & DCT gap</span>
-          </label>
-          <div class="platform-selector" id="platform-options">
-            <div class="platform-option selected" data-platform="default" onclick="selectPlatform('default')">
-              <div class="p-title">Default / Direct</div>
-              <div class="p-spec">Native • Gap 24</div>
-            </div>
-            <div class="platform-option" data-platform="instagram" onclick="selectPlatform('instagram')">
-              <div class="p-title">Instagram Feed</div>
-              <div class="p-spec">1080×1080 • Gap 36</div>
-            </div>
-            <div class="platform-option" data-platform="twitter" onclick="selectPlatform('twitter')">
-              <div class="p-title">Twitter / X</div>
-              <div class="p-spec">≤1200px • Gap 32</div>
-            </div>
-            <div class="platform-option" data-platform="telegram" onclick="selectPlatform('telegram')">
-              <div class="p-title">Telegram Photo</div>
-              <div class="p-spec">≤1280px • Gap 28</div>
-            </div>
-            <div class="platform-option" data-platform="discord" onclick="selectPlatform('discord')">
-              <div class="p-title">Discord</div>
-              <div class="p-spec">Lossless • Gap 24</div>
-            </div>
-            <div class="platform-option" data-platform="whatsapp_doc" onclick="selectPlatform('whatsapp_doc')">
-              <div class="p-title">WhatsApp Doc</div>
-              <div class="p-spec">Document • Gap 24</div>
+            <div class="card-arrow">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
             </div>
           </div>
-          <input type="hidden" id="selected-platform" value="default">
+          <h3 class="card-title">Twitter / X Post</h3>
+          <p class="card-desc">Normalizes dimensions to ≤1200px and enforces baseline Huffman quantization to survive Twitter feed delivery.</p>
         </div>
-
-        <!-- 3. Secret Message -->
-        <div class="form-group">
-          <label class="form-label">
-            <span>3. Secret Message</span>
-            <span class="form-hint" id="char-counter">0 bytes</span>
-          </label>
-          <textarea id="enc-message" class="textarea-input" placeholder="Enter confidential message, key, or data dispatch..." required></textarea>
-          
-          <div class="capacity-bar-wrap">
-            <div class="capacity-track">
-              <div class="capacity-fill" id="capacity-meter"></div>
-            </div>
-            <div class="capacity-text">
-              <span id="capacity-ratio">Payload size</span>
-              <span id="capacity-limit">Estimated capacity: Select image</span>
-            </div>
-          </div>
+        <div class="card-meta">
+          <span>Target: ≤1200px</span>
+          <span>Gap: 32</span>
         </div>
-
-        <!-- 4. Encryption Passphrase -->
-        <div class="form-group">
-          <label class="form-label">
-            <span>4. Passphrase (AES-256-GCM)</span>
-            <span class="form-hint">Key derived via scrypt</span>
-          </label>
-          <input type="password" id="enc-passphrase" class="text-input" placeholder="Enter encryption passphrase" required>
-        </div>
-
-        <!-- 5. Advanced Forensic Drawer -->
-        <details class="advanced-drawer">
-          <summary>
-            <span>⚙️ Forensic & Cryptographic Parameters</span>
-            <span style="font-size:11px; color:var(--text-dim);">Expand</span>
-          </summary>
-          <div class="drawer-content">
-            <table class="spec-table">
-              <tr><td>Key Derivation</td><td>scrypt (N=16384, r=8, p=1)</td></tr>
-              <tr><td>Authenticated Cipher</td><td>AES-256-GCM (96-bit nonce)</td></tr>
-              <tr><td>Forward Error Correction</td><td>Reed-Solomon RS(48,32)</td></tr>
-              <tr><td>DCT Frequency Target</td><td>Luminance Mid-Pairs (0, 2)</td></tr>
-              <tr><td>Macroblock Alignment</td><td>16×16 px grid-snapping</td></tr>
-            </table>
-          </div>
-        </details>
-
-        <!-- Submit Button -->
-        <button type="submit" class="btn-action" id="btn-submit-enc">
-          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4M7 10l5 5 5-5M12 15V3"/></svg>
-          Encode & Download Stego JPEG
-        </button>
-      </form>
-
-      <!-- Processing State -->
-      <div class="processing-indicator" id="enc-processing">
-        <div class="proc-header">
-          <div class="spinner"></div>
-          <span id="enc-proc-stage">Deriving cryptographic key...</span>
-        </div>
-        <div class="proc-bar">
-          <div class="proc-fill" id="enc-proc-fill"></div>
-        </div>
-        <div class="proc-status" id="enc-proc-sub">Please wait while the DCT lattice is modulated</div>
       </div>
 
-      <!-- Result Card -->
-      <div class="result-card" id="enc-result"></div>
-    </section>
-
-    <!-- ==================== DECODE PANEL ==================== -->
-    <section class="workspace-card" id="panel-decode" style="display:none;">
-      <div class="card-header">
-        <h2 class="card-title">
-          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="var(--accent-emerald)" stroke-width="2"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0 1 9.9-1"/></svg>
-          Extract & Authenticate Stego JPEG
-        </h2>
-        <p class="card-desc">Reads DCT coefficient pairs, heals quantization bit-flips via RS(48,32), and validates AES-256-GCM integrity.</p>
-      </div>
-
-      <form id="form-decode" class="form-grid">
-        <!-- 1. Stego Image Dropzone -->
-        <div class="form-group">
-          <label class="form-label">
-            <span>1. Delivered Stego Image</span>
-            <span class="form-hint">Downloaded from social platform or direct</span>
-          </label>
-          <div class="dropzone" id="decode-dropzone" onclick="document.getElementById('dec-file-input').click()">
-            <div class="dropzone-icon" style="color:var(--accent-emerald);">
-              <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="3" y="3" width="18" height="18" rx="2" ry="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/></svg>
+      <!-- Card 3: Telegram -->
+      <div class="tool-card" onclick="openEncodeModal('telegram')">
+        <div>
+          <div class="card-top">
+            <div class="card-icon" style="background: var(--accent-telegram);">
+              <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#ffffff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <line x1="22" y1="2" x2="11" y2="13"></line>
+                <polygon points="22 2 15 22 11 13 2 9 22 2"></polygon>
+              </svg>
             </div>
-            <div class="dropzone-title">Click to select stego image or drag & drop</div>
-            <div class="dropzone-sub">Supports .jpg, .jpeg files</div>
-          </div>
-          <input type="file" id="dec-file-input" class="file-input" accept="image/jpeg,.jpg,.jpeg">
-
-          <div class="file-meta-bar" id="dec-file-meta">
-            <div class="file-meta-info">
-              <img id="dec-thumb" class="file-thumb" alt="Thumbnail">
-              <div>
-                <div class="file-name" id="dec-file-name">stego.jpg</div>
-                <div class="file-size" id="dec-file-size">0 KB</div>
-              </div>
+            <div class="card-arrow">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
             </div>
-            <button type="button" class="btn-clear-file" onclick="clearFile('dec')" title="Remove file">&times;</button>
           </div>
+          <h3 class="card-title">Telegram Photo</h3>
+          <p class="card-desc">Snaps dimensions to ≤1280px (divisible by 16) and pre-quantizes at Q=85 for standard <code>sendPhoto</code> transfers.</p>
         </div>
-
-        <!-- 2. Decryption Passphrase -->
-        <div class="form-group">
-          <label class="form-label">
-            <span>2. Passphrase</span>
-            <span class="form-hint">Exact phrase used during encoding</span>
-          </label>
-          <input type="password" id="dec-passphrase" class="text-input" placeholder="Enter secret passphrase" required>
+        <div class="card-meta">
+          <span>Target: ≤1280px</span>
+          <span>Gap: 28</span>
         </div>
-
-        <!-- Submit Button -->
-        <button type="submit" class="btn-action" id="btn-submit-dec" style="background:#059669;">
-          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 2l-2 2m-7.61 7.61a5.5 5.5 0 1 1-7.778 7.778 5.5 5.5 0 0 1 7.777-7.777zm0 0L15.5 7.5m0 0l3 3L22 7l-3-3m-3.5 3.5L19 4"/></svg>
-          Extract & Verify Payload
-        </button>
-      </form>
-
-      <!-- Processing State -->
-      <div class="processing-indicator" id="dec-processing">
-        <div class="proc-header">
-          <div class="spinner" style="border-top-color:var(--accent-emerald);"></div>
-          <span id="dec-proc-stage">Reading DCT frequency lattice...</span>
-        </div>
-        <div class="proc-bar">
-          <div class="proc-fill" id="dec-proc-fill" style="background:var(--accent-emerald);"></div>
-        </div>
-        <div class="proc-status" id="dec-proc-sub">Extracting coefficient orderings and evaluating Reed-Solomon syndroms</div>
       </div>
 
-      <!-- Result Card -->
-      <div class="result-card" id="dec-result"></div>
-    </section>
-
-    <!-- ==================== CANONICAL BENCHMARK & SPECS ==================== -->
-    <section class="reference-section">
-      <div class="ref-header">
-        <h3 class="ref-title">Empirical Benchmark Verification (N=270 Trials)</h3>
-        <p class="ref-desc">Canonical real-world survivability matrix across social channels from the peer-reviewed trial dataset.</p>
-      </div>
-
-      <div class="table-container">
-        <table class="data-table">
-          <thead>
-            <tr>
-              <th>Channel Mode</th>
-              <th>Trials</th>
-              <th>Recovery</th>
-              <th>Success Rate</th>
-              <th>Mean BER</th>
-              <th>Channel Characteristics</th>
-            </tr>
-          </thead>
-          <tbody>
-            <tr>
-              <td><strong>Discord Attachment</strong></td>
-              <td>45</td>
-              <td>45 / 45</td>
-              <td><span class="rate-pill rate-100">100.0%</span></td>
-              <td>0.0000</td>
-              <td>Bit-exact file preservation</td>
-            </tr>
-            <tr>
-              <td><strong>WhatsApp Document</strong></td>
-              <td>45</td>
-              <td>45 / 45</td>
-              <td><span class="rate-pill rate-100">100.0%</span></td>
-              <td>0.0000</td>
-              <td>Lossless document stream</td>
-            </tr>
-            <tr>
-              <td><strong>Telegram (sendPhoto)</strong></td>
-              <td>45</td>
-              <td>36 / 45</td>
-              <td><span class="rate-pill rate-80">80.0%</span></td>
-              <td>0.0274</td>
-              <td>Survives when bounds ≤ 1280px</td>
-            </tr>
-            <tr>
-              <td><strong>Twitter / X (Feed Post)</strong></td>
-              <td>45</td>
-              <td>0 / 45</td>
-              <td><span class="rate-pill rate-0">0.0%*</span></td>
-              <td>0.4981</td>
-              <td>Unconditioned: spatial downscale shifts 8×8 grid</td>
-            </tr>
-            <tr>
-              <td><strong>Instagram (Feed Post)</strong></td>
-              <td>45</td>
-              <td>0 / 45</td>
-              <td><span class="rate-pill rate-0">0.0%*</span></td>
-              <td>0.5012</td>
-              <td>Unconditioned: forced crop & spatial resampling</td>
-            </tr>
-            <tr>
-              <td><strong>WhatsApp Image Mode</strong></td>
-              <td>45</td>
-              <td>0 / 45</td>
-              <td><span class="rate-pill rate-0">0.0%</span></td>
-              <td>0.4893</td>
-              <td>Aggressive non-standard re-quantization</td>
-            </tr>
-          </tbody>
-        </table>
-      </div>
-
-      <p style="font-size:12px; color:var(--text-dim); margin-bottom: 24px;">
-        *Note on Unconditioned Baseline vs Adaptive Profiles: Twitter and Instagram baseline trials yielded 0% recovery when unconditioned, arbitrary-resolution covers were uploaded because platform CDN transcoders execute fractional downscaling, shifting the $8\times 8$ DCT lattice. ShadowPost's <strong>Adaptive Pre-Flight Profiles</strong> mitigate this by matching native display canvases (e.g. 1080×1080) snapped to 16px multiples prior to embedding.
-      </p>
-
-      <div class="tech-grid">
-        <div class="tech-box">
-          <h4>
-            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="var(--accent-cyan)" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M12 6v6l4 2"/></svg>
-            Native DCT Coefficient Ordering
-          </h4>
-          <p>Operates directly in the quantized frequency domain using <code>jpeglib</code>. Avoids lossy RGB round-trips and spatial rounding artifacts entirely.</p>
+      <!-- Card 4: Lossless -->
+      <div class="tool-card" onclick="openEncodeModal('default')">
+        <div>
+          <div class="card-top">
+            <div class="card-icon" style="background: linear-gradient(135deg, #5865f2, #25d366);">
+              <svg width="24" height="24" viewBox="0 0 24 24" fill="#ffffff">
+                <path d="M20.317 4.37a19.791 19.791 0 0 0-4.885-1.515.074.074 0 0 0-.079.037c-.21.375-.444.864-.608 1.25a18.27 18.27 0 0 0-5.487 0 12.64 12.64 0 0 0-.617-1.25.077.077 0 0 0-.079-.037A19.736 19.736 0 0 0 3.677 4.37a.07.07 0 0 0-.032.027C.533 9.046-.32 13.58.099 18.057a.082.082 0 0 0 .031.057 19.9 19.9 0 0 0 5.993 3.03.078.078 0 0 0 .084-.028c.462-.63.874-1.295 1.226-1.994.021-.041.001-.09-.041-.106a13.107 13.107 0 0 1-1.872-.892.077.077 0 0 1-.008-.128 10.2 10.2 0 0 0 .372-.292.074.074 0 0 1 .077-.01c3.929 1.793 8.18 1.793 12.061 0a.074.074 0 0 1 .078.01c.12.098.246.198.373.292a.077.077 0 0 1-.006.127 12.299 12.299 0 0 1-1.873.894.077.077 0 0 0-.041.107c.36.698.772 1.362 1.225 1.993a.076.076 0 0 0 .084.028 19.839 19.839 0 0 0 6.002-3.03.077.077 0 0 0 .032-.054c.5-5.177-.838-9.674-3.549-13.66a.061.061 0 0 0-.031-.028zM8.02 15.33c-1.183 0-2.157-1.085-2.157-2.419 0-1.333.956-2.419 2.157-2.419 1.21 0 2.176 1.096 2.157 2.42 0 1.333-.956 2.418-2.157 2.418zm7.975 0c-1.183 0-2.157-1.085-2.157-2.419 0-1.333.955-2.419 2.157-2.419 1.21 0 2.176 1.096 2.157 2.42 0 1.333-.946 2.418-2.157 2.418z"/>
+              </svg>
+            </div>
+            <div class="card-arrow">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
+            </div>
+          </div>
+          <h3 class="card-title">Lossless Channel</h3>
+          <p class="card-desc">Discord Webhooks & WhatsApp Document mode. Full bit-preserving transfer with maximum message capacity.</p>
         </div>
-        <div class="tech-box">
-          <h4>
-            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="var(--accent-emerald)" stroke-width="2"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
-            Authenticated Encryption
-          </h4>
-          <p>Scrypt memory-hard key derivation paired with AES-256-GCM. Guarantees binary authentication and eliminates false-positive plaintext recovery.</p>
+        <div class="card-meta">
+          <span>Original Bounds</span>
+          <span>100% Exact Rate</span>
         </div>
-        <div class="tech-box">
-          <h4>
-            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="var(--accent-amber)" stroke-width="2"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg>
-            Reed-Solomon RS(48,32) ECC
-          </h4>
-          <p>Injects 16 parity bytes per 32 data bytes, allowing autonomous healing of up to 8 symbol errors per codeword caused by compression noise.</p>
+      </div>
+    </div>
+
+    <!-- ==================== HOW IT WORKS SECTION ==================== -->
+    <section class="how-it-works-section" id="how-it-works">
+      <div class="section-tag">Architecture</div>
+      <h3 style="font-size:22px; font-weight:800; margin-bottom:8px;">How Adaptive Transmission Works</h3>
+      <p style="color:var(--text-muted); font-size:14px; max-width:680px;">Unlike fragile LSB steganography that breaks on standard uploads, ShadowPost combines frequency-domain DCT embedding with channel-aware pre-conditioning.</p>
+      
+      <div class="hiw-grid">
+        <div class="hiw-step">
+          <h4>1. Pre-Conditioning</h4>
+          <p>The cover image is snapped to the platform's exact native canvas (e.g. 1080px) and quality, preventing destructive spatial scaling.</p>
+        </div>
+        <div class="hiw-step">
+          <h4>2. Cryptographic Armor</h4>
+          <p>Passphrase is converted to a 32-byte key via <code>scrypt</code>, then encrypted with <code>AES-256-GCM</code> with a 96-bit nonce.</p>
+        </div>
+        <div class="hiw-step">
+          <h4>3. Reed-Solomon Code</h4>
+          <p>Data chunks are padded with parity bytes (RS), allowing the decoder to automatically correct flipped bits from quantization noise.</p>
+        </div>
+        <div class="hiw-step">
+          <h4>4. Native-DCT Embedding</h4>
+          <p>Bits are embedded in relative frequency magnitudes (<code>|A| > |B|</code>) directly in the luminance DCT block lattice.</p>
         </div>
       </div>
     </section>
+
+    <!-- UNIVERSAL DECODER BANNER -->
+    <div class="decode-banner">
+      <div>
+        <h3>Universal Steganography Decoder</h3>
+        <p>Downloaded an image from Instagram, Twitter, Telegram, or Discord? Our multi-layer pipeline automatically extracts, fixes errors via Reed-Solomon, and authenticates the AES-256-GCM tag.</p>
+      </div>
+      <button class="btn-decode-banner" onclick="openDecodeModal()">Launch Decoder</button>
+    </div>
   </main>
 
-  <!-- ==================== FOOTER ==================== -->
+  <!-- ==================== ENCODE MODAL ==================== -->
+  <div class="modal-overlay" id="encode-modal">
+    <div class="modal-box">
+      <button class="modal-close" onclick="closeModals()">&times;</button>
+      <div class="modal-header">
+        <span class="modal-badge" id="enc-badge" style="background:#e0e7ff; color:#4338ca;">Profile: Instagram</span>
+        <h3 class="modal-title" id="enc-modal-title">Encode for Instagram</h3>
+        <p class="modal-subtitle" id="enc-modal-subtitle">Auto-conditions image dimensions and tunes DCT gap.</p>
+      </div>
+
+      <!-- FORM VIEW -->
+      <form id="encode-form">
+        <input type="hidden" id="enc-platform" value="instagram">
+        
+        <div class="form-group">
+          <label class="form-label">Cover Image (JPEG)</label>
+          <div class="file-dropzone" onclick="document.getElementById('enc-file').click()">
+            <div class="dropzone-text" id="enc-filename">Choose cover photo or drag & drop</div>
+            <div class="dropzone-sub">Supports .jpg, .jpeg images</div>
+          </div>
+          <input type="file" id="enc-file" accept="image/jpeg,.jpg,.jpeg" required onchange="handleFileSelect(this, 'enc-filename')">
+        </div>
+
+        <div class="form-group">
+          <label class="form-label">Secret Message</label>
+          <textarea id="enc-msg" required placeholder="Type the confidential text or credentials here..."></textarea>
+        </div>
+
+        <div class="form-group">
+          <label class="form-label">Encryption Passphrase</label>
+          <input type="password" id="enc-pass" required placeholder="Shared secret passphrase">
+        </div>
+
+        <button class="btn-submit" type="submit" id="btn-submit-encode">Encode & Download Stego JPEG</button>
+      </form>
+
+      <!-- SCANNING / LOADING ANIMATION -->
+      <div class="scanner-overlay" id="encode-scanner">
+        <div class="radar-container">
+          <div class="radar-ring pulse"></div>
+          <div class="radar-ring pulse-delayed"></div>
+          <div class="radar-core">
+            <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2"><path d="M12 2v4m0 12v4M4.93 4.93l2.83 2.83m8.48 8.48l2.83 2.83M2 12h4m12 0h4M4.93 19.07l2.83-2.83m8.48-8.48l2.83-2.83"/></svg>
+          </div>
+        </div>
+        <div class="anim-title">Encoding Adaptive Stego JPEG</div>
+        <div class="anim-step" id="enc-step-text">Deriving scrypt cryptographic key...</div>
+        <div class="anim-progress-bar">
+          <div class="anim-progress-fill" id="enc-progress-fill"></div>
+        </div>
+      </div>
+
+      <!-- RESULT VIEW -->
+      <div class="result-box" id="enc-result-box"></div>
+    </div>
+  </div>
+
+  <!-- ==================== UNIVERSAL DECODE MODAL ==================== -->
+  <div class="modal-overlay" id="decode-modal">
+    <div class="modal-box">
+      <button class="modal-close" onclick="closeModals()">&times;</button>
+      <div class="modal-header">
+        <span class="modal-badge" style="background:#fef3c7; color:#d97706;">Universal Channel Decoder</span>
+        <h3 class="modal-title">Decode Stego Image</h3>
+        <p class="modal-subtitle">Upload any image delivered via social media or direct download.</p>
+      </div>
+
+      <!-- FORM VIEW -->
+      <form id="decode-form">
+        <div class="form-group">
+          <label class="form-label">Delivered Image (JPEG)</label>
+          <div class="file-dropzone" onclick="document.getElementById('dec-file').click()">
+            <div class="dropzone-text" id="dec-filename">Choose delivered image</div>
+            <div class="dropzone-sub">Supports images downloaded from Instagram, X, etc.</div>
+          </div>
+          <input type="file" id="dec-file" accept="image/jpeg,.jpg,.jpeg" required onchange="handleFileSelect(this, 'dec-filename')">
+        </div>
+
+        <div class="form-group">
+          <label class="form-label">Decryption Passphrase</label>
+          <input type="password" id="dec-pass" required placeholder="Enter the exact secret passphrase">
+        </div>
+
+        <button class="btn-submit" type="submit" id="btn-submit-decode">Extract & Authenticate Message</button>
+      </form>
+
+      <!-- SCANNING / LOADING ANIMATION -->
+      <div class="scanner-overlay" id="decode-scanner">
+        <div class="radar-container">
+          <div class="radar-ring pulse"></div>
+          <div class="radar-ring pulse-delayed"></div>
+          <div class="radar-core">
+            <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2"><path d="M21 2l-2 2m-7.61 7.61a5.5 5.5 0 1 1-7.778 7.778 5.5 5.5 0 0 1 7.777-7.777zm0 0L15.5 7.5m0 0l3 3L22 7l-3-3m-3.5 3.5L19 4"/></svg>
+          </div>
+        </div>
+        <div class="anim-title">Scanning DCT Frequency Lattice</div>
+        <div class="anim-step" id="dec-step-text">Reading 8x8 luminance coefficients...</div>
+        <div class="anim-progress-bar">
+          <div class="anim-progress-fill" id="dec-progress-fill"></div>
+        </div>
+      </div>
+
+      <!-- RESULT VIEW -->
+      <div class="result-box" id="dec-result-box"></div>
+    </div>
+  </div>
+
   <footer>
-    <p>
-      ShadowPost &middot; Engineering & Multimedia Security Research at <strong>PCE Nagpur</strong> &middot; 
-      <a href="https://github.com/Arman-Khan-24/ShadowPost" target="_blank">GitHub Repository</a> &middot; 
-      <a href="/paper" target="_blank">IEEE Research Paper</a>
-    </p>
+    <p>ShadowPost &middot; Adaptive Native-JPEG Steganography &middot; Evaluated on 270 Live Channels</p>
   </footer>
 
-  <!-- ==================== LOGIC ==================== -->
-  <script>
-    const API = (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1')
-      ? window.location.origin
-      : (window.SHADOWPOST_API || 'https://shadowpost.onrender.com');
+<script>
+const API = (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1')
+  ? window.location.origin
+  : (window.SHADOWPOST_API || 'https://shadowpost.onrender.com');
 
-    let currentCapacity = 0;
+const PLATFORM_DETAILS = {
+  instagram: {
+    title: "Encode for Instagram Feed",
+    subtitle: "Auto-crops to 1080x1080 native square canvas, Gap 36, pre-quantized for Meta's transcoder.",
+    badge: "Profile: Instagram Feed",
+    badgeBg: "linear-gradient(135deg, #833ab4, #fd1d1d)",
+    badgeColor: "#fff"
+  },
+  twitter: {
+    title: "Encode for Twitter / X",
+    subtitle: "Normalizes bounds to ≤1200px and applies Huffman baseline quantization to survive feed transcoding.",
+    badge: "Profile: Twitter / X",
+    badgeBg: "#000",
+    badgeColor: "#fff"
+  },
+  telegram: {
+    title: "Encode for Telegram",
+    subtitle: "Snaps dimensions to ≤1280px (divisible by 16) and pre-quantizes at Q=85 for sendPhoto delivery.",
+    badge: "Profile: Telegram Photo",
+    badgeBg: "#229ed9",
+    badgeColor: "#fff"
+  },
+  default: {
+    title: "Encode for Lossless Channel",
+    subtitle: "Discord attachments & WhatsApp documents. Preserves original dimensions with maximum bit capacity.",
+    badge: "Profile: Lossless (High Capacity)",
+    badgeBg: "#4338ca",
+    badgeColor: "#fff"
+  }
+};
 
-    // Check backend health
-    fetch(API + '/platforms')
-      .then(res => {
-        if (!res.ok) throw new Error();
-        document.getElementById('backend-status').innerHTML = '<span class="status-dot"></span> API Online';
-      })
-      .catch(() => {
-        document.getElementById('backend-status').innerHTML = '<span class="status-dot" style="background:#f43f5e; box-shadow:0 0 6px #f43f5e;"></span> Offline / Demo';
-      });
+function handleFileSelect(input, targetId) {
+  if (input.files && input.files[0]) {
+    document.getElementById(targetId).textContent = "Selected: " + input.files[0].name;
+  }
+}
 
-    // Tab Switching
-    function switchMode(mode) {
-      const isEnc = mode === 'encode';
-      document.getElementById('tab-encode').classList.toggle('active', isEnc);
-      document.getElementById('tab-decode').classList.toggle('active', !isEnc);
-      document.getElementById('panel-encode').style.display = isEnc ? 'block' : 'none';
-      document.getElementById('panel-decode').style.display = isEnc ? 'none' : 'block';
-    }
+function closeModals() {
+  document.getElementById('encode-modal').classList.remove('active');
+  document.getElementById('decode-modal').classList.remove('active');
+  resetForms();
+}
 
-    // Platform Selection
-    function selectPlatform(id) {
-      document.querySelectorAll('.platform-option').forEach(el => {
-        el.classList.toggle('selected', el.getAttribute('data-platform') === id);
-      });
-      document.getElementById('selected-platform').value = id;
-    }
+// Close modal when clicking on overlay background
+document.querySelectorAll('.modal-overlay').forEach(el => {
+  el.addEventListener('click', function(e) {
+    if (e.target === el) closeModals();
+  });
+});
 
-    // File Handling
-    function setupDropzone(zoneId, inputId, metaId, thumbId, nameId, sizeId, onSelect) {
-      const zone = document.getElementById(zoneId);
-      const input = document.getElementById(inputId);
+function resetForms() {
+  document.getElementById('encode-form').style.display = 'block';
+  document.getElementById('encode-scanner').classList.remove('active');
+  document.getElementById('enc-result-box').classList.remove('show');
+  
+  document.getElementById('decode-form').style.display = 'block';
+  document.getElementById('decode-scanner').classList.remove('active');
+  document.getElementById('dec-result-box').classList.remove('show');
+}
 
-      ['dragenter', 'dragover'].forEach(ev => {
-        zone.addEventListener(ev, e => { e.preventDefault(); zone.classList.add('dragover'); });
-      });
-      ['dragleave', 'drop'].forEach(ev => {
-        zone.addEventListener(ev, e => { e.preventDefault(); zone.classList.remove('dragover'); });
-      });
-      zone.addEventListener('drop', e => {
-        if (e.dataTransfer.files && e.dataTransfer.files[0]) {
-          input.files = e.dataTransfer.files;
-          handleFile(input.files[0], zone, metaId, thumbId, nameId, sizeId, onSelect);
-        }
-      });
-      input.addEventListener('change', () => {
-        if (input.files && input.files[0]) {
-          handleFile(input.files[0], zone, metaId, thumbId, nameId, sizeId, onSelect);
-        }
-      });
-    }
+function openEncodeModal(platformKey) {
+  const meta = PLATFORM_DETAILS[platformKey] || PLATFORM_DETAILS.default;
+  document.getElementById('enc-platform').value = platformKey;
+  document.getElementById('enc-modal-title').textContent = meta.title;
+  document.getElementById('enc-modal-subtitle').textContent = meta.subtitle;
+  const badge = document.getElementById('enc-badge');
+  badge.textContent = meta.badge;
+  badge.style.background = meta.badgeBg;
+  badge.style.color = meta.badgeColor;
 
-    function handleFile(file, zone, metaId, thumbId, nameId, sizeId, callback) {
-      if (!file.type.includes('jpeg') && !file.name.match(/\.(jpe?g)$/i)) {
-        alert("Please select a valid JPEG image file (.jpg or .jpeg).");
-        return;
+  resetForms();
+  document.getElementById('encode-modal').classList.add('active');
+}
+
+function openDecodeModal() {
+  resetForms();
+  document.getElementById('decode-modal').classList.add('active');
+}
+
+// Stage-by-Stage Animation Helper
+async function runAnimatedSteps(stepElId, fillElId, steps, callback) {
+  const stepEl = document.getElementById(stepElId);
+  const fillEl = document.getElementById(fillElId);
+  for (let i = 0; i < steps.length; i++) {
+    stepEl.textContent = steps[i].text;
+    fillEl.style.width = steps[i].percent + "%";
+    await new Promise(r => setTimeout(r, steps[i].delay));
+  }
+  return await callback();
+}
+
+// ==================== ENCODE SUBMIT ====================
+document.getElementById('encode-form').addEventListener('submit', async function(e) {
+  e.preventDefault();
+  const form = document.getElementById('encode-form');
+  const scanner = document.getElementById('encode-scanner');
+  const resultBox = document.getElementById('enc-result-box');
+
+  form.style.display = 'none';
+  scanner.classList.add('active');
+  resultBox.classList.remove('show');
+
+  const steps = [
+    { text: "Deriving scrypt cryptographic key (N=16384)...", percent: 20, delay: 350 },
+    { text: "Encrypting message with AES-256-GCM + 96-bit nonce...", percent: 45, delay: 350 },
+    { text: "Encoding Reed-Solomon RS(48,32) parity armor...", percent: 65, delay: 350 },
+    { text: "Pre-conditioning canvas & embedding native DCT pairs...", percent: 85, delay: 400 },
+  ];
+
+  try {
+    const fd = new FormData();
+    fd.append('cover', document.getElementById('enc-file').files[0]);
+    fd.append('message', document.getElementById('enc-msg').value);
+    fd.append('passphrase', document.getElementById('enc-pass').value);
+    fd.append('platform', document.getElementById('enc-platform').value);
+
+    const resPromise = fetch(API + '/encode', { method: 'POST', body: fd });
+    
+    await runAnimatedSteps('enc-step-text', 'enc-progress-fill', steps, async () => {
+      const res = await resPromise;
+      if (!res.ok) {
+        const data = await res.json();
+        throw new Error(data.detail || "Encoding failed.");
       }
-      zone.style.display = 'none';
-      const meta = document.getElementById(metaId);
-      meta.classList.add('show');
-      document.getElementById(nameId).textContent = file.name;
-      document.getElementById(sizeId).textContent = (file.size / 1024).toFixed(1) + ' KB';
+      const blob = await res.blob();
+      const dims = res.headers.get('X-ShadowPost-Dimensions') || 'Target Native';
+      const maxBytes = res.headers.get('X-ShadowPost-Max-Bytes') || '';
+      const platformUsed = res.headers.get('X-ShadowPost-Platform') || 'Selected';
 
-      const thumb = document.getElementById(thumbId);
-      const reader = new FileReader();
-      reader.onload = e => {
-        thumb.src = e.target.result;
-        if (callback) callback(file);
-      };
-      reader.readAsDataURL(file);
-    }
-
-    function clearFile(prefix) {
-      document.getElementById(`${prefix}-file-input`).value = '';
-      document.getElementById(`${prefix}-file-meta`).classList.remove('show');
-      document.getElementById(`${prefix === 'enc' ? 'encode' : 'decode'}-dropzone`).style.display = 'block';
-      if (prefix === 'enc') {
-        currentCapacity = 0;
-        document.getElementById('capacity-limit').textContent = 'Estimated capacity: Select image';
-        updateCapacityMeter();
-      }
-    }
-
-    // Estimate Capacity for cover
-    function onCoverSelected(file) {
-      const img = new Image();
-      img.onload = function() {
-        const w = img.naturalWidth;
-        const h = img.naturalHeight;
-        // 8x8 blocks, 2 bits per block, codewords of 48 bytes (32 payload bytes), minus overhead
-        const blocks = Math.floor(w / 8) * Math.floor(h / 8);
-        const usableBits = blocks * 2;
-        const codewords = Math.floor(usableBits / (48 * 8));
-        currentCapacity = Math.max(0, (codewords * 32) - 2 - 12 - 16);
-        document.getElementById('cover-specs').textContent = `${w}×${h} px`;
-        document.getElementById('capacity-limit').textContent = `Max capacity: ${currentCapacity} bytes`;
-        updateCapacityMeter();
-      };
-      img.src = URL.createObjectURL(file);
-    }
-
-    // Capacity Meter & Character Counter
-    const encMessage = document.getElementById('enc-message');
-    encMessage.addEventListener('input', updateCapacityMeter);
-
-    function updateCapacityMeter() {
-      const bytes = new TextEncoder().encode(encMessage.value).length;
-      document.getElementById('char-counter').textContent = `${bytes} bytes`;
-
-      if (currentCapacity > 0) {
-        const pct = Math.min(100, Math.round((bytes / currentCapacity) * 100));
-        const meter = document.getElementById('capacity-meter');
-        meter.style.width = pct + '%';
-        meter.classList.toggle('warn', pct > 75 && pct <= 95);
-        meter.classList.toggle('danger', pct > 95);
-        document.getElementById('capacity-ratio').textContent = `${bytes} / ${currentCapacity} B (${pct}%)`;
-      } else {
-        document.getElementById('capacity-meter').style.width = '0%';
-        document.getElementById('capacity-ratio').textContent = `${bytes} bytes entered`;
-      }
-    }
-
-    setupDropzone('encode-dropzone', 'enc-file-input', 'enc-file-meta', 'enc-thumb', 'enc-file-name', 'enc-file-size', onCoverSelected);
-    setupDropzone('decode-dropzone', 'dec-file-input', 'dec-file-meta', 'dec-thumb', 'dec-file-name', 'dec-file-size');
-
-    // Helper for animated progress steps
-    async function animateSteps(stageEl, fillEl, steps) {
-      for (const step of steps) {
-        stageEl.textContent = step.text;
-        fillEl.style.width = step.pct + '%';
-        await new Promise(r => setTimeout(r, step.ms));
-      }
-    }
-
-    // ==================== ENCODE ACTION ====================
-    document.getElementById('form-encode').addEventListener('submit', async function(e) {
-      e.preventDefault();
-      const file = document.getElementById('enc-file-input').files[0];
-      if (!file) {
-        alert("Please upload a cover JPEG image first.");
-        return;
-      }
-
-      const form = document.getElementById('form-encode');
-      const proc = document.getElementById('enc-processing');
-      const stage = document.getElementById('enc-proc-stage');
-      const fill = document.getElementById('enc-proc-fill');
-      const resCard = document.getElementById('enc-result');
-      const submitBtn = document.getElementById('btn-submit-enc');
-
-      submitBtn.disabled = true;
-      proc.classList.add('show');
-      resCard.classList.remove('show');
-
-      const fd = new FormData();
-      fd.append('cover', file);
-      fd.append('message', encMessage.value);
-      fd.append('passphrase', document.getElementById('enc-passphrase').value);
-      fd.append('platform', document.getElementById('selected-platform').value);
-
-      const requestPromise = fetch(API + '/encode', { method: 'POST', body: fd });
-
-      const animPromise = animateSteps(stage, fill, [
-        { text: 'Deriving 256-bit key via scrypt (N=16384)...', pct: 25, ms: 300 },
-        { text: 'Encrypting payload via AES-256-GCM + 96-bit nonce...', pct: 50, ms: 300 },
-        { text: 'Computing Reed-Solomon RS(48,32) parity armor...', pct: 75, ms: 300 },
-        { text: 'Pre-flight snapping & embedding DCT frequency pairs...', pct: 90, ms: 350 },
-      ]);
-
-      try {
-        const [response] = await Promise.all([requestPromise, animPromise]);
-        if (!response.ok) {
-          const errData = await response.json();
-          throw new Error(errData.detail || "Server encoding error");
-        }
-
-        const blob = await response.blob();
-        const url = URL.createObjectURL(blob);
-        const dims = response.headers.get('X-ShadowPost-Dimensions') || 'Native';
-        const platform = response.headers.get('X-ShadowPost-Platform') || 'default';
-        const maxBytes = response.headers.get('X-ShadowPost-Max-Bytes') || '';
-
-        fill.style.width = '100%';
-        proc.classList.remove('show');
-        submitBtn.disabled = false;
-
-        resCard.className = 'result-card success show';
-        resCard.innerHTML = `
-          <div class="result-header">
-            <span class="res-badge">✓ Encoded & Sealed</span>
-            <span style="font-size:12px; font-family:var(--font-mono); color:var(--text-dim);">${(blob.size / 1024).toFixed(1)} KB</span>
-          </div>
-          <p style="font-size:13.5px; color:var(--text); margin-bottom:8px;">
-            Stego JPEG ready for transit via <strong>${platform}</strong> (Canvas: ${dims}, Max: ${maxBytes} B).
-          </p>
-          <a class="btn-secondary" href="${url}" download="shadowpost_${platform}_stego.jpg" style="background:var(--primary); color:#fff; border-color:transparent;">
-            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4M7 10l5 5 5-5M12 15V3"/></svg>
-            Download Stego JPEG
-          </a>
-        `;
-      } catch (err) {
-        proc.classList.remove('show');
-        submitBtn.disabled = false;
-        resCard.className = 'result-card error show';
-        resCard.innerHTML = `
-          <div class="result-header">
-            <span class="res-badge">✕ Encoding Failed</span>
-          </div>
-          <p style="font-size:13px; color:var(--text);">${escapeHtml(err.message)}</p>
-        `;
-      }
+      const url = URL.createObjectURL(blob);
+      scanner.classList.remove('active');
+      resultBox.className = 'result-box success show';
+      resultBox.innerHTML = `
+        <span class="res-tag">✓ Ready for Transit</span>
+        <h4 style="margin:4px 0 8px;">Stego JPEG Successfully Prepared</h4>
+        <p style="font-size:13px; color:#065f46;">Target: <strong>${platformUsed}</strong> &middot; Canvas: <strong>${dims}</strong> &middot; Max Capacity: <strong>${maxBytes} bytes</strong></p>
+        <a class="btn-dl" href="${url}" download="shadowpost-stego.jpg">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4M7 10l5 5 5-5M12 15V3"/></svg>
+          Download Stego JPEG
+        </a>
+      `;
     });
+  } catch (err) {
+    scanner.classList.remove('active');
+    resultBox.className = 'result-box error show';
+    resultBox.innerHTML = `
+      <span class="res-tag">✕ Encoding Error</span>
+      <p style="margin-top:6px; font-weight:600;">${err.message}</p>
+      <button class="btn-submit" style="margin-top:14px; background:#e11d48;" onclick="resetForms()">Try Again</button>
+    `;
+  }
+});
 
-    // ==================== DECODE ACTION ====================
-    document.getElementById('form-decode').addEventListener('submit', async function(e) {
-      e.preventDefault();
-      const file = document.getElementById('dec-file-input').files[0];
-      if (!file) {
-        alert("Please upload a delivered stego JPEG image first.");
-        return;
+// ==================== DECODE SUBMIT ====================
+document.getElementById('decode-form').addEventListener('submit', async function(e) {
+  e.preventDefault();
+  const form = document.getElementById('decode-form');
+  const scanner = document.getElementById('decode-scanner');
+  const resultBox = document.getElementById('dec-result-box');
+
+  form.style.display = 'none';
+  scanner.classList.add('active');
+  resultBox.classList.remove('show');
+
+  const steps = [
+    { text: "Parsing native JPEG luminance 8x8 DCT grid...", percent: 25, delay: 350 },
+    { text: "Extracting relative coefficient magnitude pairs...", percent: 50, delay: 350 },
+    { text: "Correcting channel bit-flips via Reed-Solomon...", percent: 75, delay: 350 },
+    { text: "Verifying AES-256-GCM authentication tag...", percent: 90, delay: 300 },
+  ];
+
+  try {
+    const fd = new FormData();
+    fd.append('stego', document.getElementById('dec-file').files[0]);
+    fd.append('passphrase', document.getElementById('dec-pass').value);
+
+    const resPromise = fetch(API + '/decode', { method: 'POST', body: fd });
+
+    await runAnimatedSteps('dec-step-text', 'dec-progress-fill', steps, async () => {
+      const res = await resPromise;
+      if (!res.ok) {
+        const data = await res.json();
+        throw new Error(data.detail || "Decoding failed.");
       }
-
-      const proc = document.getElementById('dec-processing');
-      const stage = document.getElementById('dec-proc-stage');
-      const fill = document.getElementById('dec-proc-fill');
-      const resCard = document.getElementById('dec-result');
-      const submitBtn = document.getElementById('btn-submit-dec');
-
-      submitBtn.disabled = true;
-      proc.classList.add('show');
-      resCard.classList.remove('show');
-
-      const fd = new FormData();
-      fd.append('stego', file);
-      fd.append('passphrase', document.getElementById('dec-passphrase').value);
-
-      const requestPromise = fetch(API + '/decode', { method: 'POST', body: fd });
-
-      const animPromise = animateSteps(stage, fill, [
-        { text: 'Parsing 8×8 luminance DCT block lattice...', pct: 30, ms: 300 },
-        { text: 'Extracting relative magnitude coefficient pairs...', pct: 60, ms: 300 },
-        { text: 'Executing Reed-Solomon syndrome error repair...', pct: 80, ms: 300 },
-        { text: 'Authenticating AES-256-GCM tag...', pct: 95, ms: 250 },
-      ]);
-
-      try {
-        const [response] = await Promise.all([requestPromise, animPromise]);
-        if (!response.ok) {
-          const errData = await response.json();
-          throw new Error(errData.detail || "Authentication or decode failed.");
-        }
-
-        const data = await response.json();
-        fill.style.width = '100%';
-        proc.classList.remove('show');
-        submitBtn.disabled = false;
-
-        resCard.className = 'result-card success show';
-        resCard.innerHTML = `
-          <div class="result-header">
-            <span class="res-badge">✓ AES-256-GCM Authenticated</span>
-            <span style="font-size:12px; font-family:var(--font-mono); color:var(--accent-emerald);">Integrity Verified</span>
-          </div>
-          <div class="recovered-message-box" id="recovered-text">${escapeHtml(data.message)}</div>
-          <button class="btn-secondary" onclick="copyRecovered()" id="btn-copy">
-            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="9" y="9" width="13" height="13" rx="2" ry="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg>
-            Copy Message
-          </button>
-        `;
-      } catch (err) {
-        proc.classList.remove('show');
-        submitBtn.disabled = false;
-        resCard.className = 'result-card error show';
-        resCard.innerHTML = `
-          <div class="result-header">
-            <span class="res-badge">✕ Verification Failed</span>
-          </div>
-          <p style="font-size:13px; color:var(--text);">${escapeHtml(err.message)}</p>
-        `;
-      }
+      const data = await res.json();
+      scanner.classList.remove('active');
+      resultBox.className = 'result-box success show';
+      resultBox.innerHTML = `
+        <span class="res-tag">✓ Authenticated via AES-GCM</span>
+        <h4 style="margin:4px 0 6px;">Recovered Confidential Message:</h4>
+        <div class="res-content">${escapeHtml(data.message)}</div>
+      `;
     });
+  } catch (err) {
+    scanner.classList.remove('active');
+    resultBox.className = 'result-box error show';
+    resultBox.innerHTML = `
+      <span class="res-tag">✕ Verification Failed</span>
+      <p style="margin-top:6px; font-weight:600;">${err.message}</p>
+      <button class="btn-submit" style="margin-top:14px; background:#e11d48;" onclick="resetForms()">Try Again</button>
+    `;
+  }
+});
 
-    function copyRecovered() {
-      const text = document.getElementById('recovered-text').innerText;
-      navigator.clipboard.writeText(text).then(() => {
-        const btn = document.getElementById('btn-copy');
-        btn.innerHTML = '✓ Copied to Clipboard';
-        setTimeout(() => {
-          btn.innerHTML = '<svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="9" y="9" width="13" height="13" rx="2" ry="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg> Copy Message';
-        }, 2000);
-      });
-    }
-
-    function escapeHtml(str) {
-      const map = {'&':'&amp;', '<':'&lt;', '>':'&gt;', '"':'&quot;', "'":'&#039;'};
-      return str.replace(/[&<>"']/g, m => map[m]);
-    }
-  </script>
+function escapeHtml(text) {
+  const map = {'&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#039;'};
+  return text.replace(/[&<>"']/g, function(m) { return map[m]; });
+}
+</script>
 </body>
 </html>
