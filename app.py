@@ -66,7 +66,7 @@ PLATFORM_PROFILES: dict[str, PlatformProfile] = {
         max_height=None,
         aspect_ratio=None,
         pre_compress_quality=None,
-        dct_gap=24,
+        dct_gap=14,
         rs_parity_bytes=16,
         redundancy=1,
     ),
@@ -77,7 +77,7 @@ PLATFORM_PROFILES: dict[str, PlatformProfile] = {
         max_height=None,
         aspect_ratio=None,
         pre_compress_quality=None,
-        dct_gap=24,
+        dct_gap=14,
         rs_parity_bytes=16,
         redundancy=1,
     ),
@@ -88,7 +88,7 @@ PLATFORM_PROFILES: dict[str, PlatformProfile] = {
         max_height=None,
         aspect_ratio=None,
         pre_compress_quality=None,
-        dct_gap=24,
+        dct_gap=14,
         rs_parity_bytes=16,
         redundancy=1,
     ),
@@ -294,6 +294,17 @@ async def paper():
     if pdf_path.is_file():
         return FileResponse(pdf_path, media_type="application/pdf", filename="ShadowPost_IEEE_Paper.pdf")
     raise HTTPException(404, "Paper PDF not found")
+
+
+@app.get("/logo.png")
+async def get_logo():
+    """Serve the ShadowPost logo image."""
+    logo_path = Path(__file__).resolve().parent / "docs" / "logo.png"
+    if not logo_path.is_file():
+        logo_path = Path(__file__).resolve().parent / "logo.png"
+    if logo_path.is_file():
+        return FileResponse(logo_path, media_type="image/png")
+    raise HTTPException(404, "Logo image not found")
 
 
 @app.get("/platforms")
