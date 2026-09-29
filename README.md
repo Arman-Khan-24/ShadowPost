@@ -118,11 +118,11 @@ To address this, ShadowPost introduces **Adaptive Pre-Flight Conditioning**:
 
 | Target Channel | Canvas Strategy | DCT Gap | FEC Code | Channel Delivery Characteristics |
 | :--- | :--- | :---: | :---: | :--- |
-| **Instagram Feed** | Strict 1080×1080 square canvas, $Q=80$ baseline | `36` | `RS(48,32)` | Prevents Instagram server-side fractional downscaling |
-| **Twitter / X Post** | Max width $\le 1200\text{px}$, $Q=82$ baseline | `32` | `RS(48,32)` | Conforms to X desktop and mobile ingestion dimensions |
-| **Telegram Photo** | Max bounds $\le 1280\text{px}$ (multiple of 16), $Q=85$ | `28` | `RS(48,32)` | Matches Telegram `sendPhoto` internal dimension limits |
-| **Discord Attachment** | Native resolution preserved | `24` | `RS(48,32)` | Bit-exact file preservation |
-| **WhatsApp Document** | Native resolution preserved | `24` | `RS(48,32)` | Bit-exact document transport |
+| **Instagram Feed** | Strict 1080×1080 square canvas, $Q=80$ baseline | `6` | `RS(48,32)` | Prevents Instagram server-side fractional downscaling |
+| **Twitter / X Post** | Max width $\le 1200\text{px}$, $Q=82$ baseline | `6` | `RS(48,32)` | Conforms to X desktop and mobile ingestion dimensions |
+| **Telegram Photo** | Max bounds $\le 1280\text{px}$ (multiple of 16), $Q=85$ | `6` | `RS(48,32)` | Matches Telegram `sendPhoto` internal dimension limits |
+| **Discord Attachment** | Native resolution preserved | `6` | `RS(48,32)` | Bit-exact file preservation |
+| **WhatsApp Document** | Native resolution preserved | `6` | `RS(48,32)` | Bit-exact document transport |
 
 ---
 
