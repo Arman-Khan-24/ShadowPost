@@ -152,7 +152,10 @@ ShadowPost/
 ```
 
 > [!TIP]
-> **Frontend Architecture:** `index.html` is the primary web application interface, designed to work seamlessly both as a static single-page application (deployed on Vercel) and served directly by FastAPI at `GET /`. `frontend.html` is maintained as a direct alias for backwards compatibility.
+> **Cover Image Selection for Maximum Imperceptibility:**
+> JPEG frequency-domain steganography embeds bits into the mid-frequency luminance DCT lattice ($8\times 8$ blocks). For optimal visual stealth:
+> - **Use high-texture images:** Natural landscapes, cityscapes, foliage, architecture, fabrics, and detailed street photography. The Human Visual System (HVS) texture-masking effect naturally absorbs the frequency modifications, making them completely imperceptible.
+> - **Avoid flat, smooth surfaces:** Clear blue skies, plain studio backdrops, and solid monotone areas have naturally zero AC frequency energy. Modifying coefficients in smooth blocks can create detectable block boundaries.
 
 ---
 
