@@ -1,3 +1,5 @@
+> Archived August–September 2026 study. Latest manual-test status is in [the main README](../../README.md#platform-test-results).
+
 # ShadowPost: Multi-Platform Survivability Study
 
 ## Experimental Design
@@ -37,5 +39,5 @@ are excluded from that calculation.
 
 - `platform_trials.csv` is the canonical master dataset.
 - The six `*_trials.csv` files provide platform-specific rows.
-- `phase7_charts.py` generates benchmark charts in `phase7_results/`.
-- Downloaded Twitter and Instagram media are under `downloaded/`.
+- `scripts/benchmark_charts.py` generates benchmark charts in `results/phase7/`.
+- Downloaded Twitter and Instagram media are under `results/downloaded/`.
