@@ -1,6 +1,6 @@
 # Recorded research results
 
-These files preserve the August–September 2026 study. They are research evidence and have not been replaced by newer manual checks. For latest delivery status, see [the main README](../README.md#platform-test-results).
+These files preserve the August–September 2026 study. They are research evidence and have not been replaced by newer manual checks. For latest delivery status, see [the main README](../README.md#before-and-after-platform-testing).
 
 ## Canonical delivery study
 

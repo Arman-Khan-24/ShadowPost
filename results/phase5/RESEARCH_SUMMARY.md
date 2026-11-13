@@ -1,4 +1,4 @@
-> Archived August–September 2026 study. Latest manual-test status is in [the main README](../../README.md#platform-test-results).
+> Archived August–September 2026 study. Latest manual-test status is in [the main README](../../README.md#before-and-after-platform-testing).
 
 # ShadowPost: Multi-Platform Survivability Study
 

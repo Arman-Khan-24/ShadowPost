@@ -1,10 +1,66 @@
-# ShadowPost
+<p align="center">
+  <img src="web/assets/logo.png" alt="ShadowPost logo" width="128">
+</p>
+
+<h1 align="center">ShadowPost</h1>
+
+<p align="center">
+  Open-source native-JPEG steganography with encrypted messages and adaptive delivery profiles.
+</p>
+
+<p align="center">
+  <a href="LICENSE"><img src="https://img.shields.io/badge/License-MIT-22c55e" alt="MIT License"></a>
+  <img src="https://img.shields.io/badge/Python-3.12%2B-3776ab" alt="Python 3.12 or newer">
+  <img src="https://img.shields.io/badge/Status-Research-8b5cf6" alt="Research project">
+</p>
+
+<p align="center">
+  <a href="#the-platform">Screenshots</a> ·
+  <a href="#before-and-after-platform-testing">Results</a> ·
+  <a href="#what-we-customized">Custom profiles</a> ·
+  <a href="#setup">Get started</a> ·
+  <a href="#contributing">Contribute</a>
+</p>
 
 ShadowPost is a Python steganography research project that hides AES-256-GCM encrypted messages in JPEG images and investigates their survival through lossy social-media delivery. It encodes bits through the relative magnitudes of pairs of quantized DCT coefficients, rather than coefficient parity: recompression can change parity and destroy parity-based payloads. Reed-Solomon error correction helps recover damaged messages, while direct coefficient access preserves the native JPEG embedding path. ShadowPost remains an in-progress research project, not production-ready software.
+
+## The platform
+
+Choose a delivery profile, provide a JPEG cover and message, then download the encrypted stego JPEG. The decoder accepts the received JPEG and the same passphrase.
+
+![ShadowPost platform profiles with current coefficient-gap settings](docs/screenshots/platform_profiles.png)
+
+<table>
+  <tr>
+    <td width="50%"><strong>Encode with a platform profile</strong></td>
+    <td width="50%"><strong>Recover and authenticate a message</strong></td>
+  </tr>
+  <tr>
+    <td><img src="docs/screenshots/encode_instagram.png" alt="Instagram profile encoder with a JPEG cover and demonstration message"></td>
+    <td><img src="docs/screenshots/decode_success.png" alt="Decoder showing the recovered demonstration message"></td>
+  </tr>
+</table>
+
+These screenshots show the current application and a local encode/decode demonstration. Platform delivery outcomes are listed below.
 
 ## Architecture
 
 **AES-256-GCM encryption → Reed-Solomon ECC → DCT embedding through jpeglib.** Extraction reverses those steps and authenticates the recovered ciphertext before returning the message.
+
+```mermaid
+flowchart LR
+    A[Message + passphrase] --> B[AES-256-GCM]
+    B --> C[Reed-Solomon ECC]
+    D[JPEG cover] --> E[Platform conditioning]
+    C --> F[Native DCT pair embedding]
+    E --> F
+    F --> G[Stego JPEG]
+    G --> H[Upload and download]
+    H --> I[DCT extraction]
+    I --> J[Reed-Solomon recovery]
+    J --> K[AES-GCM authentication]
+    K --> L[Recovered message]
+```
 
 - `crypto.py`: scrypt derives a 32-byte AES key from the passphrase. Each encryption uses a fresh 12-byte nonce and a 16-byte authentication tag.
 - `ecc.py`: the framed message is split into 32-byte data chunks and encoded as RS(48,32), with 16 parity bytes per codeword.
@@ -15,24 +71,43 @@ ShadowPost is a Python steganography research project that hides AES-256-GCM enc
 
 Pillow conditions covers and simulates recompression in experiments; it does not perform DCT embedding or extraction. Lab experiments retain their original default gap of `24`. The phase-3 experiment uses a fixed four-byte plaintext container; the application supports multiple codewords.
 
-## Platform test results
+## Before and after platform testing
 
-Latest manual upload/download tests, reported by the author on **13 November 2026**, tested all six delivery modes. Messages were recovered on five; **WhatsApp Image mode still fails and remains an open limitation**.
+The original delivery study recorded **270 trials: 45 per delivery mode**. After platform-specific customization, the author's manual upload/download retests on **13 November 2026** reported successful message recovery on Discord, WhatsApp Document, Telegram, Twitter/X, and Instagram. **WhatsApp Image mode still fails.**
 
-| Platform | Delivery mode | Latest manual-test outcome |
-|---|---|---|
-| Discord | Attachment | Successful recovery |
-| WhatsApp | Document | Successful recovery |
-| Telegram | Image | Successful recovery |
-| WhatsApp | Image | **Failed — open limitation** |
-| Twitter / X | Image | Successful recovery |
-| Instagram | Image | Successful recovery |
+| Platform | Delivery mode | Before: original benchmark | After: latest manual retests |
+|---|---|---:|---|
+| Discord | Attachment | 45/45 — 100% | Successful recovery |
+| WhatsApp | Document | 45/45 — 100% | Successful recovery |
+| Telegram | Image | 36/45 — 80% | Successful recovery |
+| Twitter / X | Image | 0/45 — 0% | Successful recovery |
+| Instagram | Image | 0/45 — 0% | Successful recovery |
+| WhatsApp | Image | 0/45 — 0% | **Failed — open limitation** |
 
-Recorded study data, exact pass/fail counts, and per-trial logs are available in [results/README.md](results/README.md) and [results/phase5/platform_trials.csv](results/phase5/platform_trials.csv).
+Twitter/X and Instagram changed from no exact recoveries in the recorded benchmark to successful recovery in the latest manual tests. Telegram also recovered messages in the latest retests. The original pass rates and trial records remain available in [results/README.md](results/README.md) and the [canonical delivery CSV](results/phase5/platform_trials.csv).
+
+## What we customized
+
+The initial benchmark exposed the limits of applying one native-DCT embedding workflow across different image-delivery paths. The application now selects a conditioning profile for the intended platform **before** embedding the encrypted payload.
+
+| Profile | Configured image bounds | Aspect handling | JPEG conditioning quality | DCT gap |
+|---|---|---|---:|---:|
+| Discord attachment | Original dimensions | Preserve cover | No pre-save | 6 |
+| WhatsApp Document | Original dimensions | Preserve cover | No pre-save | 6 |
+| Telegram Image | Up to 1280 × 1280 | Preserve aspect ratio | 85 | 6 |
+| Twitter / X Image | Up to 1200 × 1200 | Preserve aspect ratio | 82 | 6 |
+| Instagram Image | Up to 1080 × 1080 | Center crop to square | 80 | 6 |
+| WhatsApp Image | No working dedicated profile | Open problem | — | — |
+
+The profile code configures dimensions on a multiple-of-16 grid, RGB JPEG conditioning with 4:4:4 chroma sampling, and platform-specific JPEG quality. Instagram additionally uses a square center crop. Discord attachments and WhatsApp documents skip this conditioning step and preserve the input cover's dimensions.
+
+All current profiles retain the same AES-256-GCM encryption, RS(48,32) error correction, and two relative-magnitude DCT pairs per luminance block. The application uses gap **6**, while the original lab scripts retain gap **24**. Profiles change cover conditioning; encryption, error correction, and coefficient-pair selection remain shared.
+
+Exact settings live in [`src/shadowpost/profiles.py`](src/shadowpost/profiles.py). They are experimental presets, not platform specifications or guarantees for every upload.
 
 ## Setup
 
-Use **Python 3.12**; package metadata requires Python 3.12 or newer. Python 3.12 is the version used for the cleanup verification.
+Use **Python 3.12**; package metadata requires Python 3.12 or newer. The setup below uses Python 3.12.
 
 ```bash
 git clone https://github.com/Arman-Khan-24/ShadowPost.git
@@ -100,6 +175,15 @@ python -m scripts.benchmark_charts
 ```
 
 See [experiment instructions](experiments/README.md) for manual delivery checks and benchmark runs. New experiment outputs default to ignored `results/local/`; historical evidence remains under the other `results/` directories.
+
+## Contributing
+
+Contributions are welcome, especially work on WhatsApp Image delivery, coefficient-grid synchronization, reproducible platform trials, and visual-quality or detectability analysis.
+
+1. Open an [issue](https://github.com/Arman-Khan-24/ShadowPost/issues) describing the problem, platform/client, delivery mode, and reproducible steps.
+2. Fork the repository and make one focused change. Keep core logic in `src/shadowpost/`; place experiment drivers under `experiments/`.
+3. Install `requirements-dev.txt`, run `python -m pytest`, and include the relevant validation in your pull request.
+4. For recovery claims, include the tested sample count, exact pass/fail counts, profile settings, and the delivered files or reproducible logs. Never commit credentials or private test messages.
 
 ## Known limitations and open problems
 
