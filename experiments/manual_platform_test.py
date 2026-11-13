@@ -4,6 +4,7 @@ Prepare a stego image, upload it manually, download the delivered image, then
 check it. The helper invokes the existing FastAPI endpoints via TestClient;
 it does not implement or alter the locked embedding, RS, or encryption layers.
 """
+
 from __future__ import annotations
 
 import argparse
@@ -15,17 +16,30 @@ from pathlib import Path
 import numpy as np
 from fastapi.testclient import TestClient
 
-from app import app
-from phase1_native_dct_experiment import extract_native_dct
+from experiments.common import classify_failure
+from shadowpost.api import app
+from shadowpost.dct_codec import extract_native_dct
 from PIL import Image
 
-ROOT = Path(__file__).resolve().parent
-RESULTS = ROOT / "phase5_results"
+ROOT = Path(__file__).resolve().parents[1]
+RESULTS = ROOT / "results/local/manual"
 UPLOADS = RESULTS / "manual_upload"
 TRIAL_CSV = RESULTS / "platform_trials.csv"
 CODEWORD_BITS = 48 * 8
-CSV_FIELDS = ("platform", "trial", "cover_name", "payload_size_bytes", "cover_width", "cover_height",
-              "delivered_width", "delivered_height", "success", "ber", "failure_reason", "timestamp")
+CSV_FIELDS = (
+    "platform",
+    "trial",
+    "cover_name",
+    "payload_size_bytes",
+    "cover_width",
+    "cover_height",
+    "delivered_width",
+    "delivered_height",
+    "success",
+    "ber",
+    "failure_reason",
+    "timestamp",
+)
 
 
 def safe_platform_name(value: str) -> str:
@@ -40,17 +54,6 @@ def image_dimensions(path: Path) -> tuple[int, int]:
         return image.size
 
 
-def classify_failure(exc: Exception) -> str:
-    message = str(exc).lower()
-    if "capacity" in message or "too few blocks" in message:
-        return "capacity_failure"
-    if "reedsolomon" in message or "reed-solomon" in message:
-        return "reed_solomon_decode_failed"
-    if "authenticate" in message or "gcm" in message:
-        return "authentication_failed"
-    return "fixed_grid_extraction_failed"
-
-
 def prepare(args: argparse.Namespace) -> None:
     platform = safe_platform_name(args.platform)
     cover = Path(args.cover).resolve()
@@ -58,24 +61,51 @@ def prepare(args: argparse.Namespace) -> None:
         raise ValueError(f"cover image not found: {cover}")
     UPLOADS.mkdir(parents=True, exist_ok=True)
     with cover.open("rb") as handle:
-        response = TestClient(app).post("/encode", files={"cover": (cover.name, handle, "image/jpeg")},
-                                        data={"message": args.message, "passphrase": args.passphrase})
+        response = TestClient(app).post(
+            "/encode",
+            files={"cover": (cover.name, handle, "image/jpeg")},
+            data={
+                "message": args.message,
+                "passphrase": args.passphrase,
+                "platform": {"whatsapp_document": "whatsapp_doc"}.get(
+                    platform, platform
+                ),
+            },
+        )
     if response.status_code != 200:
-        raise RuntimeError(f"/encode failed: HTTP {response.status_code}: {response.text}")
+        raise RuntimeError(
+            f"/encode failed: HTTP {response.status_code}: {response.text}"
+        )
     destination = UPLOADS / f"{platform}.jpg"
+    if destination.exists() or (UPLOADS / f"{platform}.json").exists():
+        raise FileExistsError(
+            f"existing preparation for {platform}; use a new trial name or results directory"
+        )
     destination.write_bytes(response.content)
     # Record exactly how many DCT bits form this message and the original cover;
     # no passphrase or plaintext is persisted.
     plaintext_bytes = len(args.message.encode("utf-8"))
     codewords = (2 + 12 + plaintext_bytes + 16 + 31) // 32
     cover_width, cover_height = image_dimensions(cover)
-    (UPLOADS / f"{platform}.json").write_text(json.dumps({"cover_name": cover.name, "payload_size_bytes": plaintext_bytes,
-        "codeword_bits": codewords * CODEWORD_BITS, "cover_width": cover_width, "cover_height": cover_height}, indent=2) + "\n", encoding="utf-8")
+    (UPLOADS / f"{platform}.json").write_text(
+        json.dumps(
+            {
+                "cover_name": cover.name,
+                "payload_size_bytes": plaintext_bytes,
+                "codeword_bits": codewords * CODEWORD_BITS,
+                "cover_width": cover_width,
+                "cover_height": cover_height,
+            },
+            indent=2,
+        )
+        + "\n",
+        encoding="utf-8",
+    )
     print(f"prepared {destination}")
 
 
 def append_row(row: dict[str, object]) -> None:
-    RESULTS.mkdir(exist_ok=True)
+    RESULTS.mkdir(parents=True, exist_ok=True)
     write_header = not TRIAL_CSV.exists() or TRIAL_CSV.stat().st_size == 0
     with TRIAL_CSV.open("a", newline="", encoding="utf-8") as handle:
         writer = csv.DictWriter(handle, fieldnames=CSV_FIELDS)
@@ -87,50 +117,77 @@ def append_row(row: dict[str, object]) -> None:
 def check(args: argparse.Namespace) -> None:
     platform = safe_platform_name(args.platform)
     downloaded = Path(args.downloaded_image).resolve()
-    metadata_path, original_path = UPLOADS / f"{platform}.json", UPLOADS / f"{platform}.jpg"
+    metadata_path, original_path = (
+        UPLOADS / f"{platform}.json",
+        UPLOADS / f"{platform}.jpg",
+    )
     if not downloaded.is_file():
         raise ValueError(f"downloaded image not found: {downloaded}")
     if not metadata_path.is_file() or not original_path.is_file():
         raise ValueError(f"run /prepare for platform '{platform}' first")
     metadata = json.loads(metadata_path.read_text(encoding="utf-8"))
     delivered_width, delivered_height = image_dimensions(downloaded)
-    row: dict[str, object] = {"platform": platform, "trial": "manual", "cover_name": metadata["cover_name"],
-        "payload_size_bytes": metadata["payload_size_bytes"], "cover_width": metadata.get("cover_width", ""),
-        "cover_height": metadata.get("cover_height", ""), "delivered_width": delivered_width,
-        "delivered_height": delivered_height, "success": False, "ber": "", "failure_reason": "",
-        "timestamp": datetime.now(timezone.utc).isoformat()}
+    row: dict[str, object] = {
+        "platform": platform,
+        "trial": "manual",
+        "cover_name": metadata["cover_name"],
+        "payload_size_bytes": metadata["payload_size_bytes"],
+        "cover_width": metadata.get("cover_width", ""),
+        "cover_height": metadata.get("cover_height", ""),
+        "delivered_width": delivered_width,
+        "delivered_height": delivered_height,
+        "success": False,
+        "ber": "",
+        "failure_reason": "",
+        "timestamp": datetime.now(timezone.utc).isoformat(),
+    }
     try:
         bits = int(metadata["codeword_bits"])
         before = extract_native_dct(original_path, bits, (0, 2))
         after = extract_native_dct(downloaded, bits, (0, 2))
         row["ber"] = f"{np.count_nonzero(before != after) / bits:.8f}"
         with downloaded.open("rb") as handle:
-            response = TestClient(app).post("/decode", files={"stego": (downloaded.name, handle, "image/jpeg")},
-                                            data={"passphrase": args.passphrase})
+            response = TestClient(app).post(
+                "/decode",
+                files={"stego": (downloaded.name, handle, "image/jpeg")},
+                data={"passphrase": args.passphrase},
+            )
         if response.status_code != 200:
-            raise RuntimeError(f"/decode failed: HTTP {response.status_code}: {response.text}")
+            raise RuntimeError(
+                f"/decode failed: HTTP {response.status_code}: {response.text}"
+            )
         row["success"] = True
     except Exception as exc:
         row["failure_reason"] = classify_failure(exc)
     append_row(row)
-    print(f"platform={platform} success={row['success']} ber={row['ber']} reason={row['failure_reason']}")
+    print(
+        f"platform={platform} success={row['success']} ber={row['ber']} reason={row['failure_reason']}"
+    )
 
 
 def main() -> None:
+    global RESULTS, UPLOADS, TRIAL_CSV
     parser = argparse.ArgumentParser(description=__doc__)
+    parser.add_argument("--results-dir", type=Path, default=RESULTS)
     actions = parser.add_subparsers(dest="action", required=True)
-    prepare_parser = actions.add_parser("prepare", help="create a stego JPEG for manual upload")
+    prepare_parser = actions.add_parser(
+        "prepare", help="create a stego JPEG for manual upload"
+    )
     prepare_parser.add_argument("--platform", required=True)
     prepare_parser.add_argument("--cover", required=True)
     prepare_parser.add_argument("--message", required=True)
     prepare_parser.add_argument("--passphrase", required=True)
     prepare_parser.set_defaults(func=prepare)
-    check_parser = actions.add_parser("check", help="decode a manually-downloaded image and append its result")
+    check_parser = actions.add_parser(
+        "check", help="decode a manually-downloaded image and append its result"
+    )
     check_parser.add_argument("--platform", required=True)
     check_parser.add_argument("--downloaded-image", required=True)
     check_parser.add_argument("--passphrase", required=True)
     check_parser.set_defaults(func=check)
     parsed = parser.parse_args()
+    RESULTS = parsed.results_dir.resolve()
+    UPLOADS, TRIAL_CSV = RESULTS / "manual_upload", RESULTS / "platform_trials.csv"
     parsed.func(parsed)
 
 

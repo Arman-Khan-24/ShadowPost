@@ -28,7 +28,6 @@ coverage.xml
 
 # Local runs: historical results remain tracked
 results/local/
-results/**/manual_upload/*.json
 *.log
 *.pid
 

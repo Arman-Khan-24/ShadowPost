@@ -3,8 +3,10 @@
 Credentials are obtained only from TELEGRAM_BOT_TOKEN, TELEGRAM_CHAT_ID, and
 DISCORD_WEBHOOK_URL in the process environment; they are never logged.
 """
+
 from __future__ import annotations
 
+import argparse
 import csv
 import io
 import math
@@ -19,32 +21,37 @@ from dotenv import load_dotenv
 from fastapi.testclient import TestClient
 from PIL import Image
 
-from app import app, capacity_for_jpeg
-from phase1_native_dct_experiment import extract_native_dct
+from experiments.common import classify_failure
+from shadowpost.api import app
+from shadowpost.pipeline import capacity_for_jpeg
+from shadowpost.dct_codec import extract_native_dct
 
-ROOT = Path(__file__).resolve().parent
+ROOT = Path(__file__).resolve().parents[1]
 COVERS_DIR = Path(os.getenv("SHADOWPOST_COVERS_DIR", str(ROOT / "covers")))
-RESULTS_FILE = ROOT / "phase5_results" / "platform_trials.csv"
-PHASE1_TRIALS_FILE = ROOT / "phase1_results_positions_0_2_tie_fixed" / "phase1_trials.csv"
+RESULTS_FILE = ROOT / "results/local" / "platform_trials.csv"
+PHASE1_TRIALS_FILE = (
+    ROOT / "results/phase1_positions_0_2_tie_fixed" / "phase1_trials.csv"
+)
 PASSPHRASE = "ShadowPost Phase 5 test passphrase"
 CODEWORD_BITS = 48 * 8
-CSV_FIELDS = ("platform", "trial", "cover_name", "payload_size_bytes", "cover_width", "cover_height",
-              "delivered_width", "delivered_height", "success", "ber", "failure_reason", "timestamp")
+CSV_FIELDS = (
+    "platform",
+    "trial",
+    "cover_name",
+    "payload_size_bytes",
+    "cover_width",
+    "cover_height",
+    "delivered_width",
+    "delivered_height",
+    "success",
+    "ber",
+    "failure_reason",
+    "timestamp",
+)
 
 
 class StructuralFailure(RuntimeError):
     """A platform configuration or delivery failure, rather than BER damage."""
-
-
-def classify_failure(exc: Exception) -> str:
-    message = str(exc).lower()
-    if "capacity" in message or "too few blocks" in message:
-        return "capacity_failure"
-    if "reedsolomon" in message or "reed-solomon" in message:
-        return "reed_solomon_decode_failed"
-    if "authenticate" in message or "gcm" in message:
-        return "authentication_failed"
-    return "fixed_grid_extraction_failed"
 
 
 def required_codeword_bits(message: str) -> int:
@@ -62,7 +69,9 @@ def payload_sizes(cover: Path) -> tuple[int, int, int]:
     """Return the requested 10-byte, 100-byte, and near-capacity payloads."""
     maximum = capacity_for_jpeg(cover)["plaintext_bytes"]
     if maximum < 100:
-        raise StructuralFailure(f"cover capacity is only {maximum} bytes; cannot run 100-byte medium payload")
+        raise StructuralFailure(
+            f"cover capacity is only {maximum} bytes; cannot run 100-byte medium payload"
+        )
     # One byte below the computed limit exercises the largest practical message
     # while retaining the requested "near max" behavior.
     return 10, 100, max(100, maximum - 1)
@@ -73,17 +82,25 @@ def telegram_round_trip(image: bytes, filename: str) -> bytes:
     if not token or not chat_id:
         raise StructuralFailure("missing TELEGRAM_BOT_TOKEN or TELEGRAM_CHAT_ID")
     base = f"https://api.telegram.org/bot{token}"
-    response = requests.post(f"{base}/sendPhoto", data={"chat_id": chat_id},
-                             files={"photo": (filename, image, "image/jpeg")}, timeout=60)
+    response = requests.post(
+        f"{base}/sendPhoto",
+        data={"chat_id": chat_id},
+        files={"photo": (filename, image, "image/jpeg")},
+        timeout=60,
+    )
     response.raise_for_status()
     payload = response.json()
     if not payload.get("ok"):
-        raise StructuralFailure(f"Telegram upload rejected: {payload.get('description', 'unknown error')}")
+        raise StructuralFailure(
+            f"Telegram upload rejected: {payload.get('description', 'unknown error')}"
+        )
     file_id = payload["result"]["photo"][-1]["file_id"]
     metadata = requests.get(f"{base}/getFile", params={"file_id": file_id}, timeout=30)
     metadata.raise_for_status()
     file_path = metadata.json()["result"]["file_path"]
-    download = requests.get(f"https://api.telegram.org/file/bot{token}/{file_path}", timeout=60)
+    download = requests.get(
+        f"https://api.telegram.org/file/bot{token}/{file_path}", timeout=60
+    )
     download.raise_for_status()
     return download.content
 
@@ -93,7 +110,11 @@ def discord_round_trip(image: bytes, filename: str) -> bytes:
     if not webhook:
         raise StructuralFailure("missing DISCORD_WEBHOOK_URL")
     separator = "&" if "?" in webhook else "?"
-    response = requests.post(f"{webhook}{separator}wait=true", files={"file": (filename, image, "image/jpeg")}, timeout=60)
+    response = requests.post(
+        f"{webhook}{separator}wait=true",
+        files={"file": (filename, image, "image/jpeg")},
+        timeout=60,
+    )
     response.raise_for_status()
     attachments = response.json().get("attachments", [])
     if not attachments:
@@ -109,7 +130,9 @@ PLATFORMS = {"telegram": telegram_round_trip, "discord": discord_round_trip}
 def cover_images() -> list[Path]:
     """Return the exact 15 covers recorded in the finalized Phase 1 run."""
     if not PHASE1_TRIALS_FILE.is_file():
-        raise StructuralFailure(f"final Phase 1 trial manifest not found: {PHASE1_TRIALS_FILE}")
+        raise StructuralFailure(
+            f"final Phase 1 trial manifest not found: {PHASE1_TRIALS_FILE}"
+        )
     covers: list[Path] = []
     seen: set[str] = set()
     with PHASE1_TRIALS_FILE.open(newline="", encoding="utf-8") as handle:
@@ -123,7 +146,9 @@ def cover_images() -> list[Path]:
                 raise StructuralFailure(f"Phase 1 cover is missing: {cover}")
             covers.append(cover)
     if len(covers) != 15:
-        raise StructuralFailure(f"expected 15 unique Phase 1 covers; found {len(covers)} in {PHASE1_TRIALS_FILE}")
+        raise StructuralFailure(
+            f"expected 15 unique Phase 1 covers; found {len(covers)} in {PHASE1_TRIALS_FILE}"
+        )
     return covers
 
 
@@ -136,68 +161,138 @@ def image_dimensions(source: Path | bytes) -> tuple[int, int]:
         return image.size
 
 
-def run_trial(client: TestClient, platform: str, deliver, cover: Path, trial: int, payload_size: int) -> dict[str, object]:
+def run_trial(
+    client: TestClient,
+    platform: str,
+    deliver,
+    cover: Path,
+    trial: int,
+    payload_size: int,
+) -> dict[str, object]:
     message = message_of_size(payload_size)
     cover_width, cover_height = image_dimensions(cover)
     row: dict[str, object] = {
-        "platform": platform, "trial": trial, "cover_name": cover.relative_to(COVERS_DIR).as_posix(),
-        "payload_size_bytes": payload_size, "cover_width": cover_width, "cover_height": cover_height,
-        "delivered_width": "", "delivered_height": "", "success": False, "ber": "",
-        "failure_reason": "", "timestamp": datetime.now(timezone.utc).isoformat(),
+        "platform": platform,
+        "trial": trial,
+        "cover_name": cover.relative_to(COVERS_DIR).as_posix(),
+        "payload_size_bytes": payload_size,
+        "cover_width": cover_width,
+        "cover_height": cover_height,
+        "delivered_width": "",
+        "delivered_height": "",
+        "success": False,
+        "ber": "",
+        "failure_reason": "",
+        "timestamp": datetime.now(timezone.utc).isoformat(),
     }
     try:
         with cover.open("rb") as source:
-            encoded = client.post("/encode", files={"cover": (cover.name, source, "image/jpeg")},
-                                  data={"message": message, "passphrase": PASSPHRASE})
+            encoded = client.post(
+                "/encode",
+                files={"cover": (cover.name, source, "image/jpeg")},
+                data={"message": message, "passphrase": PASSPHRASE},
+            )
         if encoded.status_code != 200:
-            raise StructuralFailure(f"local /encode failed: HTTP {encoded.status_code}: {encoded.text}")
+            raise StructuralFailure(
+                f"local /encode failed: HTTP {encoded.status_code}: {encoded.text}"
+            )
         local_stego = encoded.content
         delivered = deliver(local_stego, f"shadowpost_{cover.stem}_{payload_size}.jpg")
         row["delivered_width"], row["delivered_height"] = image_dimensions(delivered)
         bit_count = required_codeword_bits(message)
         with tempfile.TemporaryDirectory() as temporary_directory:
             temporary = Path(temporary_directory)
-            local_path, delivered_path = temporary / "local.jpg", temporary / "delivered.jpg"
+            local_path, delivered_path = (
+                temporary / "local.jpg",
+                temporary / "delivered.jpg",
+            )
             local_path.write_bytes(local_stego)
             delivered_path.write_bytes(delivered)
             source_bits = extract_native_dct(local_path, bit_count, (0, 2))
             recovered_bits = extract_native_dct(delivered_path, bit_count, (0, 2))
-            row["ber"] = f"{np.count_nonzero(source_bits != recovered_bits) / bit_count:.8f}"
-        decoded = client.post("/decode", files={"stego": ("delivered.jpg", delivered, "image/jpeg")},
-                              data={"passphrase": PASSPHRASE})
+            row["ber"] = (
+                f"{np.count_nonzero(source_bits != recovered_bits) / bit_count:.8f}"
+            )
+        decoded = client.post(
+            "/decode",
+            files={"stego": ("delivered.jpg", delivered, "image/jpeg")},
+            data={"passphrase": PASSPHRASE},
+        )
         if decoded.status_code != 200:
-            raise StructuralFailure(f"local /decode failed: HTTP {decoded.status_code}: {decoded.text}")
+            raise StructuralFailure(
+                f"local /decode failed: HTTP {decoded.status_code}: {decoded.text}"
+            )
         if decoded.json().get("message") != message:
             raise StructuralFailure("decoded plaintext did not match the test message")
         row["success"] = True
     except Exception as exc:
         row["failure_reason"] = classify_failure(exc)
-    print(f"{platform} trial {trial} | {cover.name} | {payload_size} bytes | success={row['success']} | BER={row['ber']} {row['failure_reason']}")
+    print(
+        f"{platform} trial {trial} | {cover.name} | {payload_size} bytes | success={row['success']} | BER={row['ber']} {row['failure_reason']}"
+    )
     return row
 
 
 def main() -> None:
-    load_dotenv(ROOT / ".env")
+    global COVERS_DIR, RESULTS_FILE, PHASE1_TRIALS_FILE
+    parser = argparse.ArgumentParser(description=__doc__)
+    parser.add_argument("--covers-dir", type=Path, default=COVERS_DIR)
+    parser.add_argument("--manifest", type=Path, default=PHASE1_TRIALS_FILE)
+    parser.add_argument("--output", type=Path, default=RESULTS_FILE)
+    parser.add_argument(
+        "--offline",
+        action="store_true",
+        help="exercise the benchmark locally using identity delivery; no platform uploads",
+    )
+    args = parser.parse_args()
+    COVERS_DIR, RESULTS_FILE, PHASE1_TRIALS_FILE = (
+        args.covers_dir,
+        args.output,
+        args.manifest,
+    )
+    if RESULTS_FILE.exists():
+        raise SystemExit(
+            f"refusing to overwrite existing benchmark results: {RESULTS_FILE}"
+        )
+    if not args.offline:
+        load_dotenv(ROOT / ".env")
     if not COVERS_DIR.is_dir():
         raise SystemExit(f"covers directory not found: {COVERS_DIR}")
     covers = cover_images()
     if not covers:
         raise SystemExit("no Phase 1 covers were listed in the trial manifest")
 
-    RESULTS_FILE.parent.mkdir(exist_ok=True)
+    RESULTS_FILE.parent.mkdir(parents=True, exist_ok=True)
     rows: list[dict[str, object]] = []
     client = TestClient(app)
-    for platform, deliver in PLATFORMS.items():
+    deliveries = (
+        {"offline_loopback": lambda image, filename: image}
+        if args.offline
+        else PLATFORMS
+    )
+    for platform, deliver in deliveries.items():
         trial = 0
         for cover in covers:
             try:
                 sizes = payload_sizes(cover)
             except StructuralFailure as exc:
                 trial += 1
-                rows.append({"platform": platform, "trial": trial, "cover_name": cover.name,
-                             "payload_size_bytes": "", "cover_width": "", "cover_height": "",
-                             "delivered_width": "", "delivered_height": "", "success": False, "ber": "",
-                             "failure_reason": classify_failure(exc), "timestamp": datetime.now(timezone.utc).isoformat()})
+                rows.append(
+                    {
+                        "platform": platform,
+                        "trial": trial,
+                        "cover_name": cover.name,
+                        "payload_size_bytes": "",
+                        "cover_width": "",
+                        "cover_height": "",
+                        "delivered_width": "",
+                        "delivered_height": "",
+                        "success": False,
+                        "ber": "",
+                        "failure_reason": classify_failure(exc),
+                        "timestamp": datetime.now(timezone.utc).isoformat(),
+                    }
+                )
                 continue
             for size in sizes:
                 trial += 1

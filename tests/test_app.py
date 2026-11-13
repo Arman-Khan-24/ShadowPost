@@ -1,21 +1,19 @@
 """Integration and regression test suite for ShadowPost FastAPI application."""
+
 from __future__ import annotations
 
 import io
-import sys
 import tempfile
 from pathlib import Path
 
-# Ensure repository root is in sys.path
 REPO_ROOT = Path(__file__).resolve().parent.parent
-if str(REPO_ROOT) not in sys.path:
-    sys.path.insert(0, str(REPO_ROOT))
 
 import pytest
 from fastapi.testclient import TestClient
 from PIL import Image
 
-from app import app, capacity_for_jpeg, PLATFORM_PROFILES
+from shadowpost.api import app
+from shadowpost.pipeline import capacity_for_jpeg
 
 
 @pytest.fixture
@@ -42,7 +40,14 @@ def test_platforms_listing(client: TestClient):
     data = response.json()
     assert isinstance(data, list)
     profile_ids = {p["id"] for p in data}
-    expected = {"default", "discord", "whatsapp_doc", "telegram", "instagram", "twitter"}
+    expected = {
+        "default",
+        "discord",
+        "whatsapp_doc",
+        "telegram",
+        "instagram",
+        "twitter",
+    }
     assert expected.issubset(profile_ids)
 
     for item in data:
@@ -62,7 +67,7 @@ def test_root_serves_html(client: TestClient):
 
 def test_paper_endpoint(client: TestClient):
     """GET /paper should serve the paper PDF if available."""
-    pdf_path = REPO_ROOT / "ShadowPost_IEEE_Paper.pdf"
+    pdf_path = REPO_ROOT / "research" / "papers" / "ShadowPost_IEEE_Paper.pdf"
     response = client.get("/paper")
     if pdf_path.is_file():
         assert response.status_code == 200
@@ -95,7 +100,9 @@ def test_encode_decode_roundtrip_default(client: TestClient, sample_jpeg_bytes: 
     assert decode_resp.json() == {"message": message}
 
 
-def test_encode_decode_roundtrip_adaptive_instagram(client: TestClient, sample_jpeg_bytes: bytes):
+def test_encode_decode_roundtrip_adaptive_instagram(
+    client: TestClient, sample_jpeg_bytes: bytes
+):
     """Test adaptive Instagram profile conditioning and round-trip."""
     passphrase = "instagram-key-secure"
     message = "Social media covert transmission"
@@ -180,7 +187,11 @@ def test_payload_exceeding_capacity_fails(client: TestClient, sample_jpeg_bytes:
     response = client.post(
         "/encode",
         files={"cover": ("cover.jpg", sample_jpeg_bytes, "image/jpeg")},
-        data={"message": oversized_message, "passphrase": "sample-passphrase", "platform": "default"},
+        data={
+            "message": oversized_message,
+            "passphrase": "sample-passphrase",
+            "platform": "default",
+        },
     )
     assert response.status_code == 400
     assert "max capacity" in response.json().get("detail", "").lower()

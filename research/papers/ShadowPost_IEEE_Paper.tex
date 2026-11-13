@@ -16,8 +16,8 @@
 \newcommand{\paperheading}[1]{\Needspace{4\baselineskip}\vspace{1.1ex}\par\noindent\textbf{\MakeUppercase{#1}}\par\vspace{0.5ex}}
 \newcolumntype{Y}{>{\raggedright\arraybackslash}X}
 \newcommand{\pathcell}[1]{\begingroup\ttfamily\scriptsize\path{#1}\endgroup}
-\input{paper_figures/generated_results.tex}
-\input{offline_analysis/generated_offline_results.tex}
+\input{../figures/generated_results.tex}
+\input{../../results/offline_analysis/generated_offline_results.tex}
 
 \title{ShadowPost: An Empirical Delivery-Survivability Benchmark\\for Native-JPEG DCT Steganography}
 \author{\begin{tabular}{ccc}
@@ -97,7 +97,7 @@ Mode & N & Exact & Rate & 95\% CI & BER \\
 
 \begin{figure}[H]
 \centering
-\includegraphics[width=\columnwidth]{paper_figures/fig1_recovery_ci.pdf}
+\includegraphics[width=\columnwidth]{../figures/fig1_recovery_ci.pdf}
 \caption{Exact recovery rate by delivery mode with Wilson 95\% confidence intervals.}
 \label{fig:platform}
 \end{figure}
@@ -122,7 +122,7 @@ Telegram failures also illustrate why a single aggregate BER is insufficient. So
 
 \begin{figure}[H]
 \centering
-\includegraphics[width=\columnwidth]{paper_figures/fig2_payload_heatmap.pdf}
+\includegraphics[width=\columnwidth]{../figures/fig2_payload_heatmap.pdf}
 \caption{Exact recovery by delivery mode and payload class; annotations show recovered trials over total trials, and hatched cells indicate combinations absent from the cohort design.}
 \label{fig:payload}
 \end{figure}
@@ -189,7 +189,7 @@ The Telegram rows make this taxonomy concrete. Low or zero BER rows correspond t
 
 \begin{figure}[H]
 \centering
-\includegraphics[width=\columnwidth]{paper_figures/fig3_failure_taxonomy.pdf}
+\includegraphics[width=\columnwidth]{../figures/fig3_failure_taxonomy.pdf}
 \caption{Failure taxonomy by delivery mode, generated from the canonical failure\_reason field. Segment labels show raw trial counts.}
 \label{fig:taxonomy}
 \end{figure}
@@ -229,7 +229,7 @@ Transform & Mechanism & Exact & Rate & Mean BER & Aligned PSNR (dB) & Aligned SS
 
 \begin{figure}[H]
 \centering
-\includegraphics[width=\columnwidth]{offline_analysis/controlled_transform_effects.pdf}
+\includegraphics[width=\columnwidth]{../../results/offline_analysis/controlled_transform_effects.pdf}
 \caption{Offline transform study. JPEG-quality changes preserve recovery, while resize and crop conditions produce the geometric-desynchronization regime.}
 \label{fig:transforms}
 \end{figure}
@@ -253,7 +253,7 @@ Mode & Payload class & Bytes & Exact & Mean observed BER \\
 
 \begin{figure}[H]
 \centering
-\includegraphics[width=\columnwidth]{offline_analysis/capacity_robustness.pdf}
+\includegraphics[width=\columnwidth]{../../results/offline_analysis/capacity_robustness.pdf}
 \caption{Capacity robustness curves generated from the structured Discord, Telegram, and WhatsApp Document cohorts.}
 \label{fig:capacity}
 \end{figure}
@@ -307,7 +307,7 @@ Run & Pairs & Bits & Q95 BER & Q50 BER & Zero-error \\
 
 \begin{figure}[H]
 \centering
-\includegraphics[width=\columnwidth]{offline_analysis/phase1_ablation.pdf}
+\includegraphics[width=\columnwidth]{../../results/offline_analysis/phase1_ablation.pdf}
 \caption{Descriptive Phase 1 ablation across the retained historical configurations.}
 \label{fig:ablation}
 \end{figure}
@@ -331,7 +331,7 @@ Run & Bits & Cover TN & Stego TP & Balanced acc. \\
 
 \begin{figure}[H]
 \centering
-\includegraphics[width=\columnwidth]{offline_analysis/detectability_screen.pdf}
+\includegraphics[width=\columnwidth]{../../results/offline_analysis/detectability_screen.pdf}
 \caption{Balanced accuracy of the transparent paired-statistic screen; this is not rich-model steganalysis.}
 \label{fig:detectability}
 \end{figure}
@@ -347,7 +347,7 @@ A deployment must also separate passphrases from media distribution. The JPEG ca
 
 \begin{figure*}[!t]
 \centering
-\includegraphics[width=\textwidth]{paper_figures/fig4_system_pipeline.pdf}
+\includegraphics[width=\textwidth]{../figures/fig4_system_pipeline.pdf}
 \caption{ShadowPost end-to-end system pipeline. The delivery/platform transform is the uncertain stage at which channel-dependent corruption or structural change is introduced.}
 \label{fig:pipeline}
 \end{figure*}
