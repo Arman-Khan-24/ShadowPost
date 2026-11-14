@@ -1,0 +1,30 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="164" viewBox="0 0 1200 164" role="img" aria-labelledby="title description">
+  <title id="title">ShadowPost research and protocol</title>
+  <desc id="description">The archived study contains 270 delivery records across six delivery modes. The application uses AES-256-GCM and RS(48,32) with 16 parity bytes per codeword. These are study counts and protocol settings, not current recovery guarantees.</desc>
+  <rect width="1200" height="164" rx="18" fill="#0e1821"/>
+  <g fill="#15232e" stroke="#2a3d49">
+    <rect x="14" y="14" width="282" height="136" rx="13"/>
+    <rect x="310" y="14" width="282" height="136" rx="13"/>
+    <rect x="606" y="14" width="282" height="136" rx="13"/>
+    <rect x="902" y="14" width="284" height="136" rx="13"/>
+  </g>
+  <g font-family="DejaVu Sans,Arial,sans-serif">
+    <g fill="#68e8d8" font-size="40" font-weight="700">
+      <text x="36" y="69">270</text><text x="332" y="69">6</text>
+      <text x="924" y="69" font-size="35">RS(48,32)</text>
+    </g>
+    <text x="628" y="65" fill="#68e8d8" font-size="27" font-weight="700">AES-256-GCM</text>
+    <g fill="#edf5fa" font-size="16" font-weight="600">
+      <text x="36" y="104">Archived delivery trials</text>
+      <text x="332" y="104">Recorded delivery modes</text>
+      <text x="628" y="104">Authenticated encryption</text>
+      <text x="924" y="104">Reed–Solomon coding</text>
+    </g>
+    <g fill="#97afbd" font-size="12">
+      <text x="36" y="128">August–September 2026 study</text>
+      <text x="332" y="128">45 records per delivery mode</text>
+      <text x="628" y="128">Fresh nonce for each message</text>
+      <text x="924" y="128">16 parity bytes / codeword</text>
+    </g>
+  </g>
+</svg>

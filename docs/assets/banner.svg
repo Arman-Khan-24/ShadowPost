@@ -1,0 +1,43 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="380" viewBox="0 0 1200 380" role="img" aria-labelledby="title description">
+  <title id="title">ShadowPost — Encrypted messages. Real delivery tests.</title>
+  <desc id="description">Native-JPEG steganography using AES-256-GCM and Reed–Solomon error correction. A diagram highlights the two luminance coefficient pairs used by the application.</desc>
+  <defs>
+    <linearGradient id="background" x2="1" y2="1"><stop stop-color="#101b25"/><stop offset="1" stop-color="#080e15"/></linearGradient>
+    <radialGradient id="glow"><stop stop-color="#35dcd0" stop-opacity=".16"/><stop offset="1" stop-color="#35dcd0" stop-opacity="0"/></radialGradient>
+    <pattern id="cells" width="26" height="26" patternUnits="userSpaceOnUse" x="858" y="96"><rect x="1" y="1" width="24" height="24" rx="4" fill="#1c2b36"/></pattern>
+  </defs>
+  <rect width="1200" height="380" rx="22" fill="url(#background)"/>
+  <rect x=".5" y=".5" width="1199" height="379" rx="22" fill="none" stroke="#283b47"/>
+  <ellipse cx="987" cy="184" rx="293" ry="239" fill="url(#glow)"/>
+  <path d="M73 61h32" stroke="#56e6d5" stroke-width="3" stroke-linecap="round"/>
+  <g font-family="DejaVu Sans,Arial,sans-serif">
+    <text x="117" y="66" fill="#70e7d9" font-size="13" letter-spacing="2.4">NATIVE-JPEG STEGANOGRAPHY</text>
+    <text x="69" y="141" fill="#f1f7fb" font-size="62" font-weight="700" letter-spacing="-2">ShadowPost</text>
+    <text x="73" y="198" fill="#e1edf3" font-size="27">Encrypted messages.</text>
+    <text x="73" y="236" fill="#e1edf3" font-size="27">Real delivery tests.</text>
+    <text x="73" y="275" fill="#99b0bf" font-size="16">Embed in JPEG coefficients. Investigate what survives.</text>
+    <g font-size="12" fill="#c7e6e7">
+      <rect x="73" y="305" width="137" height="30" rx="15" fill="#142930" stroke="#2b555b"/>
+      <text x="141.5" y="325" text-anchor="middle">AES-256-GCM</text>
+      <rect x="221" y="305" width="116" height="30" rx="15" fill="#142930" stroke="#2b555b"/>
+      <text x="279" y="325" text-anchor="middle">RS(48,32)</text>
+      <rect x="348" y="305" width="121" height="30" rx="15" fill="#142930" stroke="#2b555b"/>
+      <text x="408.5" y="325" text-anchor="middle">Native DCT</text>
+    </g>
+    <rect x="792" y="35" width="352" height="310" rx="18" fill="#111d27" stroke="#314654"/>
+    <text x="818" y="64" fill="#d5e5ee" font-size="14" font-weight="600">INSIDE A JPEG</text>
+    <text x="1118" y="64" fill="#73dace" font-size="12" text-anchor="end">8 × 8</text>
+    <rect x="858" y="96" width="208" height="208" fill="url(#cells)"/>
+    <g fill="#2dd5e7">
+      <rect x="937" y="123" width="24" height="24" rx="4"/>
+      <rect x="911" y="149" width="24" height="24" rx="4"/>
+    </g>
+    <g fill="#4cebb0">
+      <rect x="963" y="123" width="24" height="24" rx="4"/>
+      <rect x="885" y="201" width="24" height="24" rx="4"/>
+    </g>
+    <path d="M949 135 923 161" stroke="#91f2f9" stroke-width="2"/>
+    <path d="M975 135 897 213" stroke="#97f7c9" stroke-width="2" stroke-dasharray="3 4"/>
+    <text x="968" y="330" text-anchor="middle" fill="#9fb8c7" font-size="12">2 bits / luminance block</text>
+  </g>
+</svg>
